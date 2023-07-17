@@ -29,9 +29,11 @@ class MainActivity : AppCompatActivity() {
                 MotionEvent.ACTION_DOWN -> {
                     if (isViewTouched(binding.squareView, event.x, event.y)) {
                         binding.squareView.setBackgroundResource(R.drawable.yellow_square)
+                        binding.viewPropertyModification.visibility = View.VISIBLE
                         Log.d("로그", "Square is touched")
                     } else if (isViewTouched(binding.centerView, event.x, event.y)){
                         binding.squareView.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow))
+                        binding.viewPropertyModification.visibility = View.GONE
                         Log.d("로그", "Background is touched")
                     }
                     true
