@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import com.example.slideapp.R
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.model.SlideSquareView
@@ -29,8 +30,8 @@ class MainActivity : AppCompatActivity() {
                     if (isViewTouched(binding.squareView, event.x, event.y)) {
                         binding.squareView.setBackgroundResource(R.drawable.yellow_square)
                         Log.d("로그", "Square is touched")
-                    } else {
-                        binding.squareView.setBackgroundColor(Color.YELLOW)
+                    } else if (isViewTouched(binding.centerView, event.x, event.y)){
+                        binding.squareView.setBackgroundColor(ContextCompat.getColor(this, R.color.yellow))
                         Log.d("로그", "Background is touched")
                     }
                     true
