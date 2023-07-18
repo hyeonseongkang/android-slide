@@ -1,4 +1,4 @@
-package com.example.slideapp.customviews
+package com.example.slideapp.view
 
 import android.content.Context
 import android.graphics.Canvas

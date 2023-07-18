@@ -1,4 +1,4 @@
-package com.example.slideapp.views
+package com.example.slideapp.ui
 
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
-import com.example.slideapp.customviews.CustomSquareView
+import com.example.slideapp.view.CustomSquareView
 import com.example.slideapp.R
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.models.SlideSquareView
@@ -57,19 +57,19 @@ class MainActivity : AppCompatActivity() {
         binding.rootView.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    viewmodel.isViewTouched(binding.squareView, event.x, event.y)
-              //      customView.setColors(R.color.yellow, R.color.face_book)
+                    viewmodel.isViewTouched(binding.squareView, binding.centerView, event.x, event.y)
                     true
                 }
 
                 else -> false
             }
         }
+
+        // binding.btnBackgroundColor.setOnClickListener {  }
     }
 
     private fun observer() {
         viewmodel.viewTouch.observe(this) { it ->
-
             when (it) {
                 true -> {
                     customSquareView.setColors(R.color.yellow, R.color.face_book)

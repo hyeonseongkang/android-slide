@@ -39,14 +39,25 @@ class SlideManagerViewModel : ViewModel() {
         _slideSquareViewCnt.value = _slideSquareList.value?.size
     }
 
-    fun isViewTouched(view: View, touchX: Float, touchY: Float) {
-        val location = IntArray(2)
-        view.getLocationOnScreen(location)
-        val left = location[0]
-        val top = location[1]
-        val right = left + view.width
-        val bottom = top + view.height
-        _viewTouch.value =  touchX >= left && touchX <= right && touchY >= top && touchY <= bottom
+    fun isViewTouched(squareView: View, centerView: View, touchX: Float, touchY: Float) {
+        val squareViewLocation = IntArray(2)
+        squareView.getLocationOnScreen(squareViewLocation)
+        val squareViewLeft = squareViewLocation[0]
+        val squareViewTop = squareViewLocation[1]
+        val squareViewRight = squareViewLeft + squareView.width
+        val squareViewBottom = squareViewTop + squareView.height
+
+        val centerViewLocation = IntArray(2)
+        centerView.getLocationOnScreen(centerViewLocation)
+        val centerViewLeft = centerViewLocation[0]
+        val centerViewTop = centerViewLocation[1]
+        val centerViewRight = centerViewLeft + centerView.width
+        val centerViewBottom = centerViewTop + centerView.height
+        if (touchX >= squareViewLeft && touchX <= squareViewRight && touchY >= squareViewTop && touchY <= squareViewBottom) {
+            _viewTouch.value = true
+        } else if (touchX >= centerViewLeft && touchX <= centerViewRight && touchY >= centerViewTop && touchY <= centerViewBottom) {
+            _viewTouch.value = false
+        }
     }
 
 }
