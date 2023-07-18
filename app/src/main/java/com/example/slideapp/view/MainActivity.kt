@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
 
-        viewmodel = ViewModelProvider(this).get(SlideManager::class.java)
+        viewmodel = ViewModelProvider(this)[SlideManager::class.java]
 
         val react1 = SlideSquareView.createRandomSlideSquareView()
         Log.d("로그", react1.toString())

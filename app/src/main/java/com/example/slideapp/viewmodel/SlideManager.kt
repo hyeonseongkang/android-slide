@@ -8,10 +8,12 @@ import com.example.slideapp.model.SlideSquareView
 
 class SlideManager : ViewModel() {
 
-
     private val _slideSquareList = MutableLiveData<List<SlideSquareView>>()
 
     val slideSquareList: LiveData<List<SlideSquareView>> get() = _slideSquareList
+
+    private val _slideSquareViewCnt = MutableLiveData<Int>()
+    val slideSquareViewCnt: LiveData<Int> get() = _slideSquareViewCnt
 
     private val _slideSquareView = MutableLiveData<SlideSquareView>()
     val slideSquareView: LiveData<SlideSquareView> get() = _slideSquareView
@@ -25,6 +27,17 @@ class SlideManager : ViewModel() {
             val selectedSlideSquareView = slideSquareListValue[index]
             _slideSquareView.value = selectedSlideSquareView
         }
+    }
+
+    fun setSlideSquareView() {
+        val slideSquareView = SlideSquareView.createRandomSlideSquareView()
+        val currentSlideSquareList = slideSquareList.value?.toMutableList() ?: mutableListOf()
+        currentSlideSquareList.add(slideSquareView)
+        _slideSquareList.value = currentSlideSquareList
+    }
+
+    fun getTotalCntSlideSquareView() {
+        _slideSquareViewCnt.value = _slideSquareList.value?.size
     }
 
     fun isViewTouched(view: View, touchX: Float, touchY: Float) {
