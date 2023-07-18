@@ -1,25 +1,24 @@
-package com.example.slideapp.viewmodel
+package com.example.slideapp.viewmodels
 
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.slideapp.model.SlideSquareView
+import com.example.slideapp.models.SlideSquareView
 
-class SlideManager : ViewModel() {
+class SlideManagerViewModel : ViewModel() {
 
     private val _slideSquareList = MutableLiveData<List<SlideSquareView>>()
-
-    val slideSquareList: LiveData<List<SlideSquareView>> get() = _slideSquareList
+    val slideSquareList: LiveData<List<SlideSquareView>> = _slideSquareList
 
     private val _slideSquareViewCnt = MutableLiveData<Int>()
-    val slideSquareViewCnt: LiveData<Int> get() = _slideSquareViewCnt
+    val slideSquareViewCnt: LiveData<Int> = _slideSquareViewCnt
 
     private val _slideSquareView = MutableLiveData<SlideSquareView>()
-    val slideSquareView: LiveData<SlideSquareView> get() = _slideSquareView
+    val slideSquareView: LiveData<SlideSquareView> = _slideSquareView
 
     private val _viewTouch = MutableLiveData<Boolean>()
-    val viewTouch: LiveData<Boolean> get() = _viewTouch
+    val viewTouch: LiveData<Boolean> = _viewTouch
 
     fun getSlideSquareView(index: Int) {
         val slideSquareListValue = slideSquareList.value

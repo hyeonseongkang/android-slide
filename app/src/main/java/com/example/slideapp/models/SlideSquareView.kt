@@ -1,4 +1,4 @@
-package com.example.slideapp.model
+package com.example.slideapp.models
 import java.util.UUID
 import kotlin.random.Random
 

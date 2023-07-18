@@ -1,26 +1,25 @@
-package com.example.slideapp.view
+package com.example.slideapp.views
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.slideapp.customviews.CustomSquareView
 import com.example.slideapp.R
 import com.example.slideapp.databinding.ActivityMainBinding
-import com.example.slideapp.model.SlideSquareView
-import com.example.slideapp.viewmodel.SlideManager
+import com.example.slideapp.models.SlideSquareView
+import com.example.slideapp.viewmodels.SlideManagerViewModel
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var viewmodel: SlideManager
+    private lateinit var viewmodel: SlideManagerViewModel
+
+    private lateinit var customSquareView: CustomSquareView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,12 +29,14 @@ class MainActivity : AppCompatActivity() {
         init()
         btnClick()
         observer()
-
     }
 
     private fun init() {
 
-        viewmodel = ViewModelProvider(this)[SlideManager::class.java]
+        viewmodel = ViewModelProvider(this)[SlideManagerViewModel::class.java]
+
+        customSquareView = CustomSquareView(this)
+        binding.squareView.addView(customSquareView)
 
         val react1 = SlideSquareView.createRandomSlideSquareView()
         Log.d("로그", react1.toString())
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     viewmodel.isViewTouched(binding.squareView, event.x, event.y)
+              //      customView.setColors(R.color.yellow, R.color.face_book)
                     true
                 }
 
@@ -70,17 +72,12 @@ class MainActivity : AppCompatActivity() {
 
             when (it) {
                 true -> {
-                    binding.squareView.setBackgroundResource(R.drawable.yellow_square)
+                    customSquareView.setColors(R.color.yellow, R.color.face_book)
                     binding.viewPropertyModification.visibility = View.VISIBLE
                 }
 
                 false -> {
-                    binding.squareView.setBackgroundColor(
-                        ContextCompat.getColor(
-                            this,
-                            R.color.yellow
-                        )
-                    )
+                    customSquareView.setColors(R.color.yellow, R.color.yellow)
                     binding.viewPropertyModification.visibility = View.GONE
                 }
 
