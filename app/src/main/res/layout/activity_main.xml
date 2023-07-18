@@ -12,6 +12,7 @@
         android:layout_width="200dp"
         android:layout_height="match_parent"
         android:background="@color/light_gray"
+        app:layout_constraintDimensionRatio="H,4:3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -147,10 +148,10 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/top_view"
-        app:layout_constraintStart_toEndOf="@id/left_view"
+        app:layout_constraintBottom_toTopOf="@id/bottom_view"
         app:layout_constraintEnd_toStartOf="@id/right_view"
-        app:layout_constraintBottom_toTopOf="@id/bottom_view"/>
+        app:layout_constraintStart_toEndOf="@id/left_view"
+        app:layout_constraintTop_toBottomOf="@id/top_view" />
 
     <View
         android:id="@+id/top_view"
@@ -176,6 +177,7 @@
         android:layout_height="200dp"
         android:layout_gravity="center"
         android:background="@color/yellow"
+        app:layout_constraintDimensionRatio="H,4:3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
