@@ -9,8 +9,10 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.slideapp.view.CustomSquareView
 import com.example.slideapp.R
+import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.SlideSquareView
@@ -24,9 +26,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var customSquareView: CustomSquareView
 
+    private lateinit var slideViewAdapter: SlideViewAdapter
+
     private lateinit var backgroundColor: Color
     private lateinit var combinedColor: String
     private var alpha: Int = 0
+    private var slideViewCnt: Int = 0
     private val borderColor: String = "#1877FE"
 
     private val alphaValues = arrayOf(
@@ -45,7 +50,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
         viewmodel = ViewModelProvider(this)[SlideManagerViewModel::class.java]
-        viewmodel.setSlideSquareView()
+
+        slideViewAdapter = SlideViewAdapter()
+        binding.rvSlideList.adapter = slideViewAdapter
+        binding.rvSlideList.layoutManager = LinearLayoutManager(this)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -76,6 +84,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnAlphaPlus.setOnClickListener {
             viewmodel.alphaPlus(alpha)
+        }
+
+        binding.btnAddSlide.setOnClickListener {
+            viewmodel.setSlideSquareView(slideViewCnt)
         }
     }
 
@@ -118,11 +130,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewmodel.slideSquareList.observe(this) {
+            slideViewAdapter.setSlideViewList(it, true)
+
             val slideSquareView = it.last()
             customSquareView = CustomSquareView(this)
             backgroundColor = slideSquareView.backgroundColor
-            this.alpha = slideSquareView.alpha
 
+            this.alpha = slideSquareView.alpha
             this.combinedColor =
                 "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
             customSquareView.setColors(
@@ -137,6 +151,10 @@ class MainActivity : AppCompatActivity() {
             binding.tvBackgroundColorTxt.text = combinedColor
             binding.tvAlphaTxt.text = alpha.toString()
             binding.squareView.addView(customSquareView)
+        }
+
+        viewmodel.slideSquareViewCnt.observe(this) {
+            this.slideViewCnt = it
         }
     }
 }

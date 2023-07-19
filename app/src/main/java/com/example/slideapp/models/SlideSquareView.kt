@@ -8,10 +8,7 @@ class SlideSquareView private constructor(val index: Int, val id: String, val sl
         return "Rect${index} (${id}), Slide:${slide}, R:${backgroundColor.r}, G:${backgroundColor.g}, B:${backgroundColor.b}, Alpha: ${alpha}"
     }
     companion object Factory {
-        private var index: Int = 0
-
-        fun createRandomSlideSquareView(): SlideSquareView {
-            index++
+        fun createRandomSlideSquareView(index: Int): SlideSquareView {
             val id = generateUniqueId()
             val slide = Random.nextInt(100, 500)
             val length = Random.nextInt(1, 101)
