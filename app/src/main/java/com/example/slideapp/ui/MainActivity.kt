@@ -99,11 +99,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewmodel.backgroundColor.observe(this) { it ->
-            this.combinedColor =
-                "#${alphaValues[alpha]}${it.toColorString().substring(1)}"
             binding.btnBackgroundColor.setCardBackgroundColor(
                 android.graphics.Color.parseColor(
-                    combinedColor
+                    it.toColorString()
                 )
             )
             customSquareView.setColors(it.toColorString(), borderColor)
@@ -117,11 +115,6 @@ class MainActivity : AppCompatActivity() {
             this.combinedColor =
                 "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
             customSquareView.setColors(combinedColor, borderColor)
-            binding.btnBackgroundColor.setCardBackgroundColor(
-                android.graphics.Color.parseColor(
-                    combinedColor
-                )
-            )
         }
 
         viewmodel.slideSquareList.observe(this) {
