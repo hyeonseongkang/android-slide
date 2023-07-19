@@ -22,6 +22,14 @@
 - LiveData
   : SlideSquareView를 생성하고 배경색, 투명도 등을 MutableLiveData에 저장하고, MainActivity에서는 Observer를 통해서 데이터를 관찰 후 변경사항 감지되면 UI에 표시함
 
+- Test Code
+  * SlideSquareView 생성
+  * SlideSquareView 반환
+  * Alpha 값 0 이하 변경 X
+  * Alpha 값 10 이상 변경 X
+  * SlideSquareView 전체 갯수 반환 
+  * 랜덤 배경 색상
+
 ## 결과화면
 | 선택 전 | 선택 후 |
 |:-:|:-:|
