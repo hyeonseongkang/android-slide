@@ -38,3 +38,12 @@
 |<img src="https://github.com/softeerbootcamp-2nd/android-slide/assets/68272971/a86684c6-b8fb-40a7-a9fe-8a8878db65eb" height=500px>| <img src="https://github.com/softeerbootcamp-2nd/android-slide/assets/68272971/41aa5e6e-2f11-4077-8c21-967d7b202d1a" height=500px>|
 
 
+## 3-4. 슬라이드 목록 표시
+- 23/07/19(수) - 23:25 완성
+
+## 주요내용
+- ItemTouchHelper
+  - Slide 목록을 드래그해서 순서를 바꾸기 위해 ItemTouchHelper 구현하여 Adapter에 적용
+
+## 결과화면
+![화면-기록-2023-07-19-오후-11 28 58](https://github.com/hyeonseongkang/OpenSource_Lecture_project/assets/68272971/2a099306-4572-4d0a-8c33-18814e666aef)
