@@ -4,7 +4,9 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.slideapp.models.Color
 import com.example.slideapp.models.SlideSquareView
+import kotlin.random.Random
 
 class SlideManagerViewModel : ViewModel() {
 
@@ -19,6 +21,12 @@ class SlideManagerViewModel : ViewModel() {
 
     private val _viewTouch = MutableLiveData<Boolean>()
     val viewTouch: LiveData<Boolean> = _viewTouch
+
+    private val _backgroundColor = MutableLiveData<Color>()
+    val backgroundColor: LiveData<Color> = _backgroundColor
+
+    private val _alphaValue = MutableLiveData<Int>()
+    val alphaValue: LiveData<Int> = _alphaValue
 
     fun getSlideSquareView(index: Int) {
         val slideSquareListValue = slideSquareList.value
@@ -37,6 +45,25 @@ class SlideManagerViewModel : ViewModel() {
 
     fun getTotalCntSlideSquareView() {
         _slideSquareViewCnt.value = _slideSquareList.value?.size
+    }
+
+    fun randomBackgroundColor() {
+        val red = Random.nextInt(256)
+        val green = Random.nextInt(256)
+        val blue = Random.nextInt(256)
+
+        val color = Color(red, green, blue)
+
+        _backgroundColor.value = color
+    }
+
+    fun alphaMinus(alpha: Int) {
+        _alphaValue.value = maxOf(alpha - 1, 0)
+
+    }
+
+    fun alphaPlus(alpha: Int) {
+        _alphaValue.value = minOf(alpha + 1, 10)
     }
 
     fun isViewTouched(squareView: View, centerView: View, touchX: Float, touchY: Float) {

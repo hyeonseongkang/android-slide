@@ -2,8 +2,10 @@ package com.example.slideapp.view
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -37,10 +39,9 @@ class CustomSquareView (context: Context, attrs: AttributeSet? = null) : View(co
         )
     }
 
-    fun setColors(backgroundColorRes: Int, borderColorRes: Int) {
-        this.backgroundColor = ContextCompat.getColor(context, backgroundColorRes)
-        this.borderColor = ContextCompat.getColor(context, borderColorRes)
-        //         this.borderColor = Color.parseColor("#80FF0000") // 반투명한 빨간색 (50% 투명도)
+    fun setColors(backgroundColorString: String, borderColorString: String) {
+        this.backgroundColor = Color.parseColor(backgroundColorString)
+        this.borderColor = Color.parseColor(borderColorString)
         backgroundPaint.color = backgroundColor
         borderPaint.color = borderColor
         invalidate()
