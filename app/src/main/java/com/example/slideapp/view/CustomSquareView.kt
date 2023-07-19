@@ -11,10 +11,10 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.example.slideapp.R
 
-class CustomSquareView (context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
+class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
 
-    private var backgroundColor: Int = ContextCompat.getColor(context, R.color.yellow)
-    private var borderColor: Int = ContextCompat.getColor(context, R.color.yellow)
+    private var backgroundColor: Int = ContextCompat.getColor(context, R.color.white)
+    private var borderColor: Int = ContextCompat.getColor(context, R.color.white)
 
     private val backgroundPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -26,8 +26,12 @@ class CustomSquareView (context: Context, attrs: AttributeSet? = null) : View(co
         strokeWidth = dpToPx(2f)
         color = borderColor
     }
+
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        canvas.drawColor(Color.TRANSPARENT)
 
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), backgroundPaint)
 
@@ -40,6 +44,7 @@ class CustomSquareView (context: Context, attrs: AttributeSet? = null) : View(co
     }
 
     fun setColors(backgroundColorString: String, borderColorString: String) {
+        backgroundPaint.color = Color.TRANSPARENT
         this.backgroundColor = Color.parseColor(backgroundColorString)
         this.borderColor = Color.parseColor(borderColorString)
         backgroundPaint.color = backgroundColor
