@@ -1,8 +1,8 @@
-package com.example.slideapp.model
+package com.example.slideapp.models
 import java.util.UUID
 import kotlin.random.Random
 
-class SlideSquareView private constructor(private val index: Int, private val id: String, private val slide: Int, val length: Int, private val alpha: Int, private val backgroundColor: Color) {
+class SlideSquareView private constructor(val index: Int, val id: String, val slide: Int, val length: Int, val alpha: Int, val backgroundColor: Color) {
 
     override fun toString(): String {
         return "Rect${index} (${id}), Slide:${slide}, R:${backgroundColor.r}, G:${backgroundColor.g}, B:${backgroundColor.b}, Alpha: ${alpha}"
