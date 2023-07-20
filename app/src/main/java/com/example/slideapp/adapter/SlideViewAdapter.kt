@@ -2,6 +2,7 @@ package com.example.slideapp.adapter
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +41,12 @@ class SlideViewAdapter(
         holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, position)
         }
+
+        holder.itemView.setOnLongClickListener {
+            itemLongClickListener.onLongClick(it, position)
+            true // 롱클릭 이벤트를 소비했음을 반환합니다.
+        }
+
     }
 
     override fun getItemCount(): Int {
@@ -58,6 +65,21 @@ class SlideViewAdapter(
     }
 
     private lateinit var itemClickListener: OnItemClickListener
+
+
+    // (1) 롱클릭 리스너 인터페이스
+    interface OnItemLongClickListener {
+        fun onLongClick(v: View, position: Int)
+    }
+
+    // (2) 외부에서 롱클릭 시 이벤트 설정
+    fun setItemLongClickListener(onItemLongClickListener: OnItemLongClickListener) {
+        this.itemLongClickListener = onItemLongClickListener
+    }
+
+    // (3) setItemLongClickListener로 설정한 함수 실행
+    private lateinit var itemLongClickListener: OnItemLongClickListener
+
 
     fun setItemClickListener(onItemClickListener: OnItemClickListener) {
         this.itemClickListener = onItemClickListener

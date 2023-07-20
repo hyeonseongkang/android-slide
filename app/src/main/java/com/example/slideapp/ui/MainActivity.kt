@@ -1,13 +1,18 @@
 package com.example.slideapp.ui
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.slideapp.R
 import com.example.slideapp.callback.ItemTouchHelperCallback
 import com.example.slideapp.view.CustomSquareView
 import com.example.slideapp.adapter.SlideViewAdapter
@@ -53,31 +58,37 @@ class MainActivity : AppCompatActivity() {
         customSquareView = CustomSquareView(this)
         slideViewAdapter = SlideViewAdapter()
         binding.rvSlideList.adapter = slideViewAdapter
+
+        val itemAnimator = DefaultItemAnimator()
+        itemAnimator.supportsChangeAnimations = false
+        binding.rvSlideList.itemAnimator = itemAnimator
+
         binding.rvSlideList.layoutManager = LinearLayoutManager(this)
 
         val itemTouchHelperCallback = ItemTouchHelperCallback(slideViewAdapter)
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.rvSlideList)
 
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun btnClick() {
-        binding.rootView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    viewmodel.isViewTouched(
-                        binding.squareView,
-                        binding.centerView,
-                        event.x,
-                        event.y
-                    )
-                    true
-                }
-
-                else -> false
-            }
-        }
+//        binding.rootView.setOnTouchListener { _, event ->
+//            when (event.action) {
+//                MotionEvent.ACTION_DOWN -> {
+//                    viewmodel.isViewTouched(
+//                        binding.squareView,
+//                        binding.centerView,
+//                        event.x,
+//                        event.y
+//                    )
+//                    true
+//                }
+//
+//                else -> false
+//            }
+//        }
 
         binding.btnBackgroundColor.setOnClickListener {
             viewmodel.randomBackgroundColor()
@@ -114,6 +125,26 @@ class MainActivity : AppCompatActivity() {
                 binding.tvBackgroundColorTxt.text = combinedColor
                 binding.tvAlphaTxt.text = alpha.toString()
 
+            }
+        })
+
+        slideViewAdapter.setItemLongClickListener(object : SlideViewAdapter.OnItemLongClickListener {
+            override fun onLongClick(v: View, position: Int) {
+                Toast.makeText(this@MainActivity, "메뉴바를 보여주셈.", Toast.LENGTH_SHORT).show()
+
+            }
+        })
+
+        // CustomSquareView 바인딩
+        customSquareView = binding.squareView
+
+        // 더블클릭 이벤트 리스너 설정
+        customSquareView.setOnDoubleTapListener(object : CustomSquareView.OnDoubleTapListener {
+            override fun onDoubleTap() {
+                // 더블클릭 이벤트 처리를 구현합니다.
+                // 이곳에서 원하는 기능을 추가합니다.
+                Toast.makeText(this@MainActivity, "이미지 영역을 더블클릭하셨습니다.", Toast.LENGTH_SHORT).show()
+                Log.d("MainActivity", "Image Double Clicked!")
             }
         })
     }
@@ -174,6 +205,11 @@ class MainActivity : AppCompatActivity() {
                 combinedColor,
                 combinedColor
             )
+
+            // 이미지 가져오기
+//            val imageBitmap = BitmapFactory.decodeResource(resources, R.drawable.steve)
+//
+//            binding.squareView.setImage(imageBitmap)
 
             binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
 
