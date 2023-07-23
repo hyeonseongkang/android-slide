@@ -6,24 +6,31 @@ import kotlin.random.Random
 class SlideSquareView private constructor(
     var index: Int,
     val id: String,
-    val slide: Int,
-    val length: Int,
+    var isSquare: Boolean,
     var alpha: Int,
-    var backgroundColor: Color
-) {
+    var square: Square,
+    var photo: Photo? = null
 
+) {
     override fun toString(): String {
-        return "Rect${index} (${id}), Slide:${slide}, R:${backgroundColor.r}, G:${backgroundColor.g}, B:${backgroundColor.b}, Alpha: ${alpha}"
+        return "Rect${index} (${id}), Slide:${square.slide}, R:${square.backgroundColor.r}, G:${square.backgroundColor.g}, B:${square.backgroundColor.b}, Alpha: ${alpha}"
     }
 
     companion object Factory {
-        fun createRandomSlideSquareView(index: Int): SlideSquareView {
+        var index = 0
+        fun createRandomSlideSquareView(): SlideSquareView {
+            val square = Random.nextInt(2)
             val id = generateUniqueId()
+            index++
+            val alpha = Random.nextInt(1, 11)
             val slide = Random.nextInt(100, 500)
             val length = Random.nextInt(1, 101)
             val backgroundColor = generateRandomColor()
-            val alpha = Random.nextInt(1, 11)
-            return SlideSquareView(index, id, slide, length, alpha, backgroundColor)
+            return if (square == 0) {
+                SlideSquareView(index, id, true, alpha, Square(slide, length, backgroundColor))
+            } else {
+                SlideSquareView(index, id, false, 10, Square(0,  0,Color(0, 0, 0)), null)
+            }
         }
 
         private fun generateUniqueId(): String {

@@ -1,5 +1,6 @@
 package com.example.slideapp.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -7,55 +8,75 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Half.toFloat
 import android.util.Log
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.slideapp.R
+import com.example.slideapp.listener.doubleTapListener
+import com.example.slideapp.listener.singleTapListener
 
 class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
 
-    // (1) 리스너 인터페이스
-    interface OnDoubleTapListener {
-        fun onDoubleTap()
-    }
-
-    // (2) 외부에서 리스너 설정
-    private var doubleTapListener: OnDoubleTapListener? = null
-
-    fun setOnDoubleTapListener(listener: OnDoubleTapListener) {
-        this.doubleTapListener = listener
-    }
-
-    // (3) 더블클릭 이벤트 처리
-    private val doubleTapGestureDetector: GestureDetector
-
-    init {
-        doubleTapGestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                doubleTapListener?.onDoubleTap() // 더블클릭 이벤트 발생 시 외부에서 설정한 리스너 호출
-                return true
-            }
-        })
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        val result = doubleTapGestureDetector.onTouchEvent(event)
-        if (!result) {
-            // 더블클릭 이벤트가 아닌 경우 기본 터치 이벤트를 처리합니다.
-            return super.onTouchEvent(event)
-        }
-        return result
-    }
-
-    private var backgroundColor: Int = ContextCompat.getColor(context, R.color.white)
-    private var borderColor: Int = ContextCompat.getColor(context, R.color.white)
+    private var backgroundColor: Int = Color.TRANSPARENT
+    private var borderColor: Int = Color.TRANSPARENT
 
     private var imageBitmap: Bitmap? = null
     private var imageRect: Rect? = null
+
+    private var doubleTapListener: doubleTapListener? = null
+    private var singleTapListener: singleTapListener? = null
+
+    private var doubleTapStartTime: Long = 0
+    private val doubleTapTimeout: Long = ViewConfiguration.getDoubleTapTimeout().toLong()
+
+    private var isSingleTap = false
+    private val singleTapTimeout: Long = ViewConfiguration.getDoubleTapTimeout().toLong()
+
+    fun setOnDoubleTapListener(listener: doubleTapListener) {
+        doubleTapListener = listener
+    }
+
+    fun setOnSingleTapListener(listener: singleTapListener) {
+        singleTapListener = listener
+    }
+
+    private fun onSingleTap() {
+        singleTapListener?.onSingleTap()
+    }
+
+    private fun onDoubleTap() {
+        doubleTapListener?.onDoubleTap()
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - doubleTapStartTime <= doubleTapTimeout) {
+                    onDoubleTap()
+                    removeCallbacks(singleTapRunnable)
+                } else {
+                    isSingleTap = true
+                    postDelayed(singleTapRunnable, singleTapTimeout)
+                }
+                doubleTapStartTime = currentTime
+            }
+        }
+        return true
+    }
+
+    private val singleTapRunnable = Runnable {
+        if (isSingleTap) {
+            onSingleTap()
+        }
+        isSingleTap = false
+    }
 
     private fun calculateImageRect() {
         imageBitmap?.let {
@@ -68,7 +89,6 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
             val bottom: Int
 
             if (viewRatio > imageRatio) {
-                // 이미지의 높이를 맞추고 가로 방향으로 가운데 정렬
                 val scaledHeight = height
                 val scaledWidth = (scaledHeight * imageRatio).toInt()
                 left = (width - scaledWidth) / 2
@@ -76,7 +96,6 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
                 right = left + scaledWidth
                 bottom = top + scaledHeight
             } else {
-                // 이미지의 너비를 맞추고 세로 방향으로 가운데 정렬
                 val scaledWidth = width
                 val scaledHeight = (scaledWidth / imageRatio).toInt()
                 left = 0
@@ -100,22 +119,31 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
         color = borderColor
     }
 
+    private val imagePaint = Paint().apply {
+        alpha = 255
+    }
 
-
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
-        // 이미지 그리기
         imageBitmap?.let { bitmap ->
             imageRect?.let { rect ->
-                canvas.drawBitmap(bitmap, null, rect, null)
+
+                val halfStrokeWidth = borderPaint.strokeWidth / 2
+
+                val imageRectWithBorder = Rect(
+                    (rect.left + halfStrokeWidth).toInt(),
+                    (rect.top + halfStrokeWidth).toInt(),
+                    (rect.right - halfStrokeWidth).toInt(),
+                    (rect.bottom - halfStrokeWidth).toInt()
+                )
+                canvas.drawBitmap(bitmap, null, imageRectWithBorder, imagePaint)
+
+                canvas.drawRect(imageRectWithBorder, borderPaint)
             }
         }
 
-        // 배경색 및 테두리 그리기
         if (imageBitmap == null) {
-            canvas.drawColor(Color.TRANSPARENT)
-
             canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), backgroundPaint)
 
             val halfStrokeWidth = borderPaint.strokeWidth / 2
@@ -127,18 +155,35 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
         }
     }
 
-    fun setColors(backgroundColorString: String, borderColorString: String) {
-        backgroundPaint.color = Color.TRANSPARENT
-        this.backgroundColor = Color.parseColor(backgroundColorString)
-        this.borderColor = Color.parseColor(borderColorString)
+    fun setColors(backgroundColorString: String) {
+        imageBitmap = null
+        backgroundColor = Color.parseColor(backgroundColorString)
         backgroundPaint.color = backgroundColor
-        borderPaint.color = borderColor
+
+        val layoutParams = layoutParams
+        layoutParams.width = dpToPx(300f).toInt()
+        layoutParams.height = dpToPx(300f).toInt()
+        setLayoutParams(layoutParams)
+
         invalidate()
     }
 
-    fun setImage(bitmap: Bitmap) {
+    fun setImage(bitmap: Bitmap, alpha: Int) {
         imageBitmap = bitmap
+        imagePaint.alpha = alpha
         calculateImageRect()
+        invalidate()
+    }
+
+    fun unSelectedView() {
+        val whiteColor = ContextCompat.getColor(context, R.color.white)
+        borderPaint.color = whiteColor
+        invalidate()
+    }
+
+    fun selectedView() {
+        val faceBookColor = ContextCompat.getColor(context, R.color.face_book)
+        borderPaint.color = faceBookColor
         invalidate()
     }
 

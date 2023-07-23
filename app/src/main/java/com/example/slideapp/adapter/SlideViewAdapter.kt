@@ -1,52 +1,40 @@
 package com.example.slideapp.adapter
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.slideapp.R
+import com.example.slideapp.databinding.AdapterSlideSquareItemBinding
+import com.example.slideapp.listener.ItemClickListener
+import com.example.slideapp.listener.ItemLongClickListener
 import com.example.slideapp.listener.ItemTouchHelperListener
 import com.example.slideapp.models.SlideSquareView
-import java.util.Collections
 
 class SlideViewAdapter(
-    private var slideViewList: MutableList<SlideSquareView> = mutableListOf(),
-    private var squareView: Boolean = false
+    private var slideViewList: MutableList<SlideSquareView> = mutableListOf()
 ) : RecyclerView.Adapter<SlideViewAdapter.SlideViewHolder>(), ItemTouchHelperListener {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SlideViewHolder {
-        val layoutRes =
-            if (squareView) R.layout.adapter_slide_square_item else R.layout.adapter_slide_photo_item
-        val itemView = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
-        return SlideViewHolder(itemView)
-    }
+    private lateinit var itemClickListener: ItemClickListener
+    private lateinit var itemLongClickListener: ItemLongClickListener
 
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
-        val toPositionIndex = slideViewList[toPosition].index
-        slideViewList[toPosition].index = slideViewList[fromPosition].index
-        slideViewList[fromPosition].index = toPositionIndex
-        Collections.swap(slideViewList, fromPosition, toPosition)
-        notifyItemMoved(fromPosition, toPosition)
-        notifyDataSetChanged()
-        return true
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SlideViewHolder {
+        val binding = AdapterSlideSquareItemBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        return SlideViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: SlideViewHolder, position: Int) {
         holder.bind(slideViewList[position])
+
         holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, position)
         }
 
         holder.itemView.setOnLongClickListener {
             itemLongClickListener.onLongClick(it, position)
-            true // 롱클릭 이벤트를 소비했음을 반환합니다.
+            true
         }
-
     }
 
     override fun getItemCount(): Int {
@@ -54,44 +42,41 @@ class SlideViewAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setSlideViewList(slideViewList: MutableList<SlideSquareView>, squareView: Boolean) {
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        if (fromPosition < 0 || toPosition > itemCount - 1) return false
+
+        val movedItem = slideViewList.removeAt(fromPosition)
+        slideViewList.add(toPosition, movedItem)
+
+        val startIndex = 1
+        for (i in 0 until slideViewList.size) {
+            slideViewList[i].index = startIndex + i
+        }
+
+        notifyItemMoved(fromPosition, toPosition)
+        notifyItemRangeChanged(0, slideViewList.size)
+
+        return true
+    }
+
+    fun setSlideViewList(slideViewList: MutableList<SlideSquareView>) {
         this.slideViewList = slideViewList
-        this.squareView = squareView
-        notifyDataSetChanged()
+        notifyItemInserted(slideViewList.size - 1)
     }
 
-    interface OnItemClickListener {
-        fun onClick(v: View, position: Int)
-    }
-
-    private lateinit var itemClickListener: OnItemClickListener
-
-
-    // (1) 롱클릭 리스너 인터페이스
-    interface OnItemLongClickListener {
-        fun onLongClick(v: View, position: Int)
-    }
-
-    // (2) 외부에서 롱클릭 시 이벤트 설정
-    fun setItemLongClickListener(onItemLongClickListener: OnItemLongClickListener) {
+    fun setItemLongClickListener(onItemLongClickListener: ItemLongClickListener) {
         this.itemLongClickListener = onItemLongClickListener
     }
 
-    // (3) setItemLongClickListener로 설정한 함수 실행
-    private lateinit var itemLongClickListener: OnItemLongClickListener
-
-
-    fun setItemClickListener(onItemClickListener: OnItemClickListener) {
+    fun setItemClickListener(onItemClickListener: ItemClickListener) {
         this.itemClickListener = onItemClickListener
     }
 
-    class SlideViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val slideIndex: TextView = view.findViewById(R.id.tv_slide_index)
-        private val slideBackground: View = view.findViewById(R.id.v_background)
-
+    class SlideViewHolder(private val binding: AdapterSlideSquareItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(slideView: SlideSquareView) {
-            slideIndex.text = (slideView.index + 1).toString()
-            slideBackground.setBackgroundColor(Color.parseColor(slideView.backgroundColor.toColorString()))
+            binding.tvSlideIndex.text = ""
+            binding.vBackground.setBackgroundResource(R.color.mid_gray2)
+            binding.square = slideView
         }
     }
 }

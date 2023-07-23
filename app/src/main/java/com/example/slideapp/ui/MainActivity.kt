@@ -1,13 +1,15 @@
 package com.example.slideapp.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.MotionEvent
+import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
+import android.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -17,13 +19,22 @@ import com.example.slideapp.callback.ItemTouchHelperCallback
 import com.example.slideapp.view.CustomSquareView
 import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
+import com.example.slideapp.listener.ItemClickListener
+import com.example.slideapp.listener.ItemLongClickListener
+import com.example.slideapp.listener.doubleTapListener
+import com.example.slideapp.listener.singleTapListener
 import com.example.slideapp.models.Color
+import com.example.slideapp.models.Photo
 import com.example.slideapp.models.SlideSquareView
 import com.example.slideapp.utils.combineColor
+import com.example.slideapp.utils.convertAlphaStringToValue
 import com.example.slideapp.utils.parseColor
 import com.example.slideapp.viewmodels.SlideManagerViewModel
+import java.io.ByteArrayOutputStream
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
+
+    private val READ_EXTERNAL_STORAGE_REQUEST_CODE = 101
 
     private lateinit var binding: ActivityMainBinding
 
@@ -36,8 +47,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var backgroundColor: Color
     private lateinit var combinedColor: String
     private var alpha: Int = 0
-    private var slideViewCnt: Int = 0
-    private val borderColor: String = "#1877FE"
     private lateinit var slideViewList: List<SlideSquareView>
     private lateinit var selectedSlideView: SlideSquareView
 
@@ -69,28 +78,20 @@ class MainActivity : AppCompatActivity() {
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.rvSlideList)
 
+        binding.squareView.setOnSingleTapListener(this)
+        binding.squareView.setOnDoubleTapListener(this)
 
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun btnClick() {
-//        binding.rootView.setOnTouchListener { _, event ->
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    viewmodel.isViewTouched(
-//                        binding.squareView,
-//                        binding.centerView,
-//                        event.x,
-//                        event.y
-//                    )
-//                    true
-//                }
-//
-//                else -> false
-//            }
-//        }
+        binding.centerView.setOnClickListener {
+            binding.squareView.unSelectedView()
+        }
 
         binding.btnBackgroundColor.setOnClickListener {
+            if (!selectedSlideView.isSquare)
+                return@setOnClickListener
             viewmodel.randomBackgroundColor()
         }
 
@@ -103,122 +104,194 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnAddSlide.setOnClickListener {
-            viewmodel.setSlideSquareView(slideViewCnt)
+            viewmodel.setSlideSquareView()
         }
 
-        slideViewAdapter.setItemClickListener(object : SlideViewAdapter.OnItemClickListener {
+        slideViewAdapter.setItemClickListener(object : ItemClickListener {
             override fun onClick(v: View, position: Int) {
                 selectedSlideView = slideViewList[position]
-                backgroundColor = selectedSlideView.backgroundColor
-
+                backgroundColor = selectedSlideView.square.backgroundColor
                 alpha = selectedSlideView.alpha
+                if (selectedSlideView.isSquare) {
+                    combinedColor = combineColor(alpha, backgroundColor)
 
-                combinedColor = combineColor(alpha, backgroundColor)
+                    binding.squareView.setColors(
+                        combinedColor,
+                    )
 
-                binding.squareView.setColors(
-                    combinedColor,
-                    combinedColor
-                )
+                    binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
 
-                binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-
-                binding.tvBackgroundColorTxt.text = combinedColor
-                binding.tvAlphaTxt.text = alpha.toString()
-
+                    binding.tvBackgroundColorTxt.text = combinedColor
+                    binding.tvAlphaTxt.text = alpha.toString()
+                } else {
+                    if (selectedSlideView.photo == null) {
+                        openGallery()
+                    } else {
+                        binding.tvBackgroundColorTxt.text = ""
+                        binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+                        selectedSlideView.photo!!.toBitmap()?.let {
+                            customSquareView.setImage(
+                                it,
+                                convertAlphaStringToValue(alpha)
+                            )
+                        }
+                    }
+                }
+                binding.squareView.selectedView()
             }
         })
 
-        slideViewAdapter.setItemLongClickListener(object : SlideViewAdapter.OnItemLongClickListener {
+        slideViewAdapter.setItemLongClickListener(object : ItemLongClickListener {
             override fun onLongClick(v: View, position: Int) {
-                Toast.makeText(this@MainActivity, "메뉴바를 보여주셈.", Toast.LENGTH_SHORT).show()
+                val popupMenu = PopupMenu(v.context, v)
+                popupMenu.inflate(R.menu.menu)
 
+                popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+                    when (menuItem.itemId) {
+                        R.id.action_send_to_back -> {
+                            slideViewAdapter.onItemMove(position, slideViewList.size - 1)
+                            true
+                        }
+
+                        R.id.action_send_backward -> {
+                            slideViewAdapter.onItemMove(position, position + 1)
+                            true
+                        }
+
+                        R.id.action_send_forward -> {
+                            slideViewAdapter.onItemMove(position, position - 1)
+                            true
+                        }
+
+                        R.id.action_send_to_front -> {
+                            slideViewAdapter.onItemMove(position, 0)
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+                popupMenu.show()
             }
         })
 
-        // CustomSquareView 바인딩
         customSquareView = binding.squareView
-
-        // 더블클릭 이벤트 리스너 설정
-        customSquareView.setOnDoubleTapListener(object : CustomSquareView.OnDoubleTapListener {
-            override fun onDoubleTap() {
-                // 더블클릭 이벤트 처리를 구현합니다.
-                // 이곳에서 원하는 기능을 추가합니다.
-                Toast.makeText(this@MainActivity, "이미지 영역을 더블클릭하셨습니다.", Toast.LENGTH_SHORT).show()
-                Log.d("MainActivity", "Image Double Clicked!")
-            }
-        })
     }
 
-    private fun observer() {
-        viewmodel.viewTouch.observe(this) { it ->
-            when (it) {
-                true -> {
-                    combinedColor = combineColor(alpha, backgroundColor)
-                    binding.squareView.setColors(combinedColor, borderColor)
-                    binding.viewPropertyModification.visibility = View.VISIBLE
-                }
+    override fun onDoubleTap() {
+        if (selectedSlideView.isSquare)
+            return
+        openGallery()
+    }
 
-                false -> {
-                    combinedColor = combineColor(alpha, backgroundColor)
-                    binding.squareView.setColors(combinedColor, combinedColor)
-                    binding.viewPropertyModification.visibility = View.GONE
-                }
-            }
+    override fun onSingleTap() {
+        if (selectedSlideView.isSquare) {
+            combinedColor = combineColor(alpha, backgroundColor)
+            binding.squareView.setColors(combinedColor)
+        } else {
+            selectedSlideView.photo?.toBitmap()
+                ?.let { binding.squareView.setImage(it, convertAlphaStringToValue(alpha)) }
         }
+        binding.squareView.selectedView()
+    }
 
+    @SuppressLint("ResourceAsColor")
+    private fun observer() {
         viewmodel.backgroundColor.observe(this) { it ->
             binding.btnBackgroundColor.setBackgroundColor(parseColor(it.toColorString()))
 
-            this.backgroundColor = Color(it.r, it.g, it.b)
-            this.selectedSlideView.backgroundColor = Color(it.r, it.g, it.b)
+            backgroundColor = Color(it.r, it.g, it.b)
+            selectedSlideView.square.backgroundColor = Color(it.r, it.g, it.b)
 
             combinedColor = combineColor(alpha, backgroundColor)
             binding.squareView.setColors(
-                combinedColor,
                 combinedColor
             )
 
             binding.tvBackgroundColorTxt.text = combinedColor
-            slideViewAdapter.setSlideViewList(slideViewList as MutableList<SlideSquareView>, true)
+            slideViewAdapter.setSlideViewList(slideViewList as MutableList<SlideSquareView>)
+
+            binding.squareView.selectedView()
         }
 
         viewmodel.alphaValue.observe(this) { it ->
-            this.alpha = it
+            alpha = it
             binding.tvAlphaTxt.text = alpha.toString()
-            this.selectedSlideView.alpha = alpha
-            combinedColor = combineColor(alpha, backgroundColor)
-            binding.squareView.setColors(combinedColor, borderColor)
-            binding.tvBackgroundColorTxt.text = combinedColor
+            selectedSlideView.alpha = alpha
+
+            if (selectedSlideView.isSquare) {
+                combinedColor = combineColor(alpha, backgroundColor)
+                binding.squareView.setColors(combinedColor)
+                binding.tvBackgroundColorTxt.text = combinedColor
+            } else {
+                selectedSlideView.photo?.toBitmap()?.let { it1 ->
+                    binding.squareView.setImage(
+                        it1,
+                        convertAlphaStringToValue(alpha)
+                    )
+                }
+                binding.tvBackgroundColorTxt.text = ""
+            }
+            binding.squareView.selectedView()
+
         }
 
         viewmodel.slideSquareList.observe(this) {
-            slideViewAdapter.setSlideViewList(it as MutableList<SlideSquareView>, true)
+            slideViewAdapter.setSlideViewList(it as MutableList<SlideSquareView>)
 
-            this.slideViewList = it
-            this.selectedSlideView = it.last()
+            slideViewList = it
+            selectedSlideView = it.last()
 
-            backgroundColor = selectedSlideView.backgroundColor
-            this.alpha = selectedSlideView.alpha
-
-            combinedColor = combineColor(alpha, backgroundColor)
-            binding.squareView.setColors(
-                combinedColor,
-                combinedColor
-            )
-
-            // 이미지 가져오기
-//            val imageBitmap = BitmapFactory.decodeResource(resources, R.drawable.steve)
-//
-//            binding.squareView.setImage(imageBitmap)
-
-            binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
-
-            binding.tvBackgroundColorTxt.text = backgroundColor.toColorString()
+            alpha = selectedSlideView.alpha
             binding.tvAlphaTxt.text = alpha.toString()
-        }
+            if (selectedSlideView.isSquare) {
+                backgroundColor = selectedSlideView.square.backgroundColor
+                combinedColor = combineColor(alpha, backgroundColor)
+                binding.squareView.setColors(
+                    combinedColor
+                )
 
-        viewmodel.slideSquareViewCnt.observe(this) {
-            this.slideViewCnt = it
+                binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
+
+                binding.tvBackgroundColorTxt.text = backgroundColor.toColorString()
+            } else {
+                binding.btnBackgroundColor.setBackgroundColor(R.color.black)
+                binding.tvBackgroundColorTxt.text = ""
+                openGallery()
+            }
+        }
+    }
+
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+        startActivityForResult(intent, READ_EXTERNAL_STORAGE_REQUEST_CODE)
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val imageUri = data?.data
+            if (imageUri != null) {
+                try {
+                    val inputStream = contentResolver.openInputStream(imageUri)
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    inputStream?.close()
+
+                    if (bitmap != null) {
+                        val byteArrayOutputStream = ByteArrayOutputStream()
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+                        val byteArray = byteArrayOutputStream.toByteArray()
+                        val photo = Photo(byteArray)
+                        selectedSlideView.photo = photo
+                        customSquareView.setImage(bitmap, convertAlphaStringToValue(alpha))
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 }
