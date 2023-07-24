@@ -8,14 +8,10 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Half.toFloat
-import android.util.Log
 import android.util.TypedValue
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.slideapp.R
 import com.example.slideapp.listener.doubleTapListener

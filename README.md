@@ -47,3 +47,20 @@
 
 ## 결과화면
 ![화면-기록-2023-07-19-오후-11 28 58](https://github.com/hyeonseongkang/OpenSource_Lecture_project/assets/68272971/2a099306-4572-4d0a-8c33-18814e666aef)
+
+
+## 3-5. 사진 슬라이드 추가하기
+- 23/07/24(월) - 10:43 완성
+
+## 구현 내용
+- 이미지 슬라이드 추가하기
+- slide 목록 아이템 이동
+
+## 고민 사항
+- adapter bindingAdapter: 이미지 슬라이드 경우 drawable/ic_gallery, 정사각형 슬라이드 경우 해당 색깔 표시하기 위해 adapter_slide_view_item.xml binding, 문제는 정사각형일 때 View의 backgroundColor를 바꿔야 하는데 일반적인 binding으로 불가능하여 @BindingAdapter 이용하여 색깔 변경함
+- slide view long click popup menu: 슬라이드 view를 길게 누르면 popup menu 나와야 함 -> PopupMenu class 사용
+- adapter item 이동: popup menue에서 수행해야 하는 동작 클릭하면 adapter 안에서 position 바꾼 뒤 notifyItemMoved(fromPosition, toPosition)
+  notifyItemRangeChanged(0, slideViewList.size) 함수 사용하여 이동 처리
+
+## 개선할 점
+- 코드가 아직 깔끔하지 못한 거 같음, 리뷰 받은 내용 중심으로 코드 작성하기

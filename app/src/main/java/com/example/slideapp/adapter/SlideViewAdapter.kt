@@ -41,7 +41,6 @@ class SlideViewAdapter(
         return slideViewList.size
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
         if (fromPosition < 0 || toPosition > itemCount - 1) return false
 
@@ -59,9 +58,10 @@ class SlideViewAdapter(
         return true
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun setSlideViewList(slideViewList: MutableList<SlideSquareView>) {
         this.slideViewList = slideViewList
-        notifyItemInserted(slideViewList.size - 1)
+        notifyDataSetChanged()
     }
 
     fun setItemLongClickListener(onItemLongClickListener: ItemLongClickListener) {
