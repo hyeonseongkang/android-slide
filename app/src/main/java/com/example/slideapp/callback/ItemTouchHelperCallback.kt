@@ -16,7 +16,6 @@ class ItemTouchHelperCallback (private val listener: ItemTouchHelperListener) : 
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        TODO("Not yet implemented")
     }
 
 }

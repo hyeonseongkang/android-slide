@@ -9,3 +9,7 @@ private val alphaValues = arrayOf(
 fun combineColor(alpha: Int, backgroundColor: Color): String {
         return "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
 }
+
+fun convertAlphaStringToValue(alpha: Int): Int {
+    return alphaValues[alpha].toInt(16)
+}
