@@ -55,7 +55,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
     private lateinit var slideViewList: List<SlideSquareView>
     private lateinit var selectedSlideView: SlideSquareView
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -120,6 +119,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                 selectedSlideView = slideViewList[position]
                 backgroundColor = selectedSlideView.square.backgroundColor
                 alpha = selectedSlideView.alpha
+                binding.tvAlphaTxt.text = alpha.toString()
                 if (selectedSlideView.isSquare) {
                     combinedColor = combineColor(alpha, backgroundColor)
 
@@ -128,9 +128,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                     )
 
                     binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-
                     binding.tvBackgroundColorTxt.text = combinedColor
-                    binding.tvAlphaTxt.text = alpha.toString()
                 } else if (selectedSlideView.photo != null){
                     binding.tvBackgroundColorTxt.text = ""
                     binding.btnBackgroundColor.setBackgroundResource(R.color.black)

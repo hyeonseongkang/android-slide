@@ -44,7 +44,6 @@ class SlideSquareView private constructor(
                 SlideSquareView(index, slide.id, false , slide.alpha, Square(0, Color(0, 0,0,)),
                     slide.image?.let { Photo(it) })
             }
-
         }
 
         private fun generateUniqueId(): String {

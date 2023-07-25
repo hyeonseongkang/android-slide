@@ -13,7 +13,4 @@ interface ApiService {
 
     @GET("jk/softeer-bootcamp/image-slides.json")
     suspend fun getImageSlides(): SlideResponse
-
-    @GET
-    suspend fun downloadImage(@Url url: String): ResponseBody
 }

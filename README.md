@@ -64,3 +64,24 @@
 
 ## 개선할 점
 - 코드가 아직 깔끔하지 못한 거 같음, 리뷰 받은 내용 중심으로 코드 작성하기
+
+## 4-1. 슬라이드 불러오기
+- 23/07/25(화) - 17:45 완성
+
+## 구현 내용
+- 서버에서 Slides 데이터 가져오기
+
+## 고민 사항
+* 서버에서 Slides 데이터 가져올 때 사용할 Library 선택 -> Retrofit 사용
+  이유
+1. interface 작성하면 그 안에 구현 내용을 retrofit에서 작성해줌,
+2. JSON 데이터 객체 변환 : retrofit은 기본적으로 Gson 컨버터를 제공, Gson을 추가로 설정하거나 코드를 작성하지 않아도 자동으로 JSON 데이터를 객체로 변환해주기 때문에 JSON 객체를 편하게 사용할 수 있음
+
+
+* Image Url -> Bitmap 변환
+  retrofit을 통해서 JSON 데이터를 받아온 뒤, type이 Image라면 url이 존재하고 해당 url의 image를 다운로드 받아 byteArray로 관리해야 함.
+  처음에는 중첩으로 retrofit 사용하여 image까지 받아왔음 -> 코드 복잡해짐.
+  utils에 HttpURLConnection을 사용하여 image다운 받아서 Bitmap으로 반환하는 함수 만들어서 사용
+
+## 개선할 점
+MainActivity에 DataBinding 적용하기

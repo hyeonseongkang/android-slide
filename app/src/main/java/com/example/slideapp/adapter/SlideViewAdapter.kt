@@ -58,17 +58,17 @@ class SlideViewAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setSlideViewList(slideViewList: MutableList<SlideSquareView>) {
-        this.slideViewList = slideViewList
+    fun setSlideViewList(getSlideViewList: MutableList<SlideSquareView>) {
+        slideViewList = getSlideViewList
         notifyDataSetChanged()
     }
 
     fun setItemLongClickListener(onItemLongClickListener: ItemLongClickListener) {
-        this.itemLongClickListener = onItemLongClickListener
+        itemLongClickListener = onItemLongClickListener
     }
 
     fun setItemClickListener(onItemClickListener: ItemClickListener) {
-        this.itemClickListener = onItemClickListener
+        itemClickListener = onItemClickListener
     }
 
     class SlideViewHolder(private val binding: AdapterSlideViewItemBinding) : RecyclerView.ViewHolder(binding.root) {

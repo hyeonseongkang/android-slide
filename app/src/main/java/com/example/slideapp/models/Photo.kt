@@ -16,6 +16,6 @@ class Photo(
 
 private fun Bitmap.toByteArray(): ByteArray {
     val stream = ByteArrayOutputStream()
-    this.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    compress(Bitmap.CompressFormat.PNG, 100, stream)
     return stream.toByteArray()
 }

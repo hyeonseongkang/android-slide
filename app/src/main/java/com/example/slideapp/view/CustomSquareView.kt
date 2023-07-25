@@ -193,26 +193,4 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
             TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics
         )
     }
-
-    private fun setImageUrlWithGlide(imageUrl: String) {
-        Glide.with(this)
-            .asBitmap()
-            .load(imageUrl)
-            .into(object : SimpleTarget<Bitmap>() {
-                override fun onResourceReady(
-                    resource: Bitmap,
-                    transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
-                ) {
-                    imageBitmap = resource
-                    calculateImageRect()
-                    invalidate()
-                }
-            })
-    }
-
-    fun setImageUrl(imageUrl: String) {
-        imageBitmap = null
-        setImageUrlWithGlide(imageUrl)
-    }
-
 }

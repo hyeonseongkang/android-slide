@@ -31,6 +31,7 @@ class SlideManagerViewModel(private val slideRepository: SlideViewRepository) : 
 
     private val _slidesData = MutableLiveData<List<Slide>>()
     val slidesData: LiveData<List<Slide>> = _slidesData
+    
     fun getSlideSquareView(index: Int) {
         val slideSquareListValue = slideSquareList.value
         if (slideSquareListValue != null && index >= 0 && index < slideSquareListValue.size) {
@@ -76,7 +77,6 @@ class SlideManagerViewModel(private val slideRepository: SlideViewRepository) : 
     fun alphaPlus(alpha: Int) {
         _alphaValue.value = minOf(alpha + 1, 10)
     }
-
 
     fun getSlidesData() {
         viewModelScope.launch {

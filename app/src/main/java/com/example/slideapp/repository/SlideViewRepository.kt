@@ -33,10 +33,8 @@ class SlideViewRepository {
                 Log.d("로그", slide.image.toString() + "여기요!!")
             }
 
-            // 모든 Slide 객체 반환
             response.slides
         } catch (e: Exception) {
-            Log.e("SlideViewRepository", "Exception: ${e.message}")
             null
         }
     }
