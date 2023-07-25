@@ -11,29 +11,33 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.slideapp.R
 import com.example.slideapp.callback.ItemTouchHelperCallback
 import com.example.slideapp.view.CustomSquareView
 import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
+import com.example.slideapp.factory.SlideManagerViewModelFactory
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
-import com.example.slideapp.listener.doubleTapListener
-import com.example.slideapp.listener.singleTapListener
+import com.example.slideapp.listener.DoubleTapListener
+import com.example.slideapp.listener.SingleTapListener
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.Photo
 import com.example.slideapp.models.SlideSquareView
+import com.example.slideapp.repository.SlideViewRepository
 import com.example.slideapp.utils.combineColor
 import com.example.slideapp.utils.convertAlphaStringToValue
 import com.example.slideapp.utils.parseColor
 import com.example.slideapp.viewmodels.SlideManagerViewModel
 import java.io.ByteArrayOutputStream
 
-class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
+class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, View.OnLongClickListener {
 
     private val READ_EXTERNAL_STORAGE_REQUEST_CODE = 101
 
@@ -63,7 +67,10 @@ class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
     }
 
     private fun init() {
-        viewmodel = ViewModelProvider(this)[SlideManagerViewModel::class.java]
+        val slideRepository = SlideViewRepository()
+        val viewModelFactory = SlideManagerViewModelFactory(slideRepository)
+
+        viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideManagerViewModel::class.java)
 
         customSquareView = CustomSquareView(this)
         slideViewAdapter = SlideViewAdapter()
@@ -124,18 +131,14 @@ class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
 
                     binding.tvBackgroundColorTxt.text = combinedColor
                     binding.tvAlphaTxt.text = alpha.toString()
-                } else {
-                    if (selectedSlideView.photo == null) {
-                        openGallery()
-                    } else {
-                        binding.tvBackgroundColorTxt.text = ""
-                        binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-                        selectedSlideView.photo!!.toBitmap()?.let {
-                            customSquareView.setImage(
-                                it,
-                                convertAlphaStringToValue(alpha)
-                            )
-                        }
+                } else if (selectedSlideView.photo != null){
+                    binding.tvBackgroundColorTxt.text = ""
+                    binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+                    selectedSlideView.photo!!.toBitmap()?.let {
+                        customSquareView.setImage(
+                            it,
+                            convertAlphaStringToValue(alpha)
+                        )
                     }
                 }
                 binding.squareView.selectedView()
@@ -176,7 +179,15 @@ class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
             }
         })
 
+        binding.btnAddSlide.setOnLongClickListener(this)
+
         customSquareView = binding.squareView
+    }
+
+    override fun onLongClick(v: View): Boolean {
+        // Snackbar.make(v, "start retrofit", Snackbar.LENGTH_SHORT).show()
+        viewmodel.getSlidesData()
+        return true
     }
 
     override fun onDoubleTap() {
@@ -195,14 +206,13 @@ class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
         }
         binding.squareView.selectedView()
     }
-
     @SuppressLint("ResourceAsColor")
     private fun observer() {
         viewmodel.backgroundColor.observe(this) { it ->
             binding.btnBackgroundColor.setBackgroundColor(parseColor(it.toColorString()))
 
-            backgroundColor = Color(it.r, it.g, it.b)
-            selectedSlideView.square.backgroundColor = Color(it.r, it.g, it.b)
+            backgroundColor = Color(it.R, it.G, it.B)
+            selectedSlideView.square.backgroundColor = Color(it.R, it.G, it.B)
 
             combinedColor = combineColor(alpha, backgroundColor)
             binding.squareView.setColors(
@@ -255,21 +265,30 @@ class MainActivity : AppCompatActivity(), singleTapListener, doubleTapListener {
                 binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
 
                 binding.tvBackgroundColorTxt.text = backgroundColor.toColorString()
-            } else {
-                binding.btnBackgroundColor.setBackgroundColor(R.color.black)
+            } else if (selectedSlideView.photo != null){
                 binding.tvBackgroundColorTxt.text = ""
-                openGallery()
+                binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+                selectedSlideView.photo!!.toBitmap()?.let {
+                    customSquareView.setImage(
+                        it,
+                        convertAlphaStringToValue(alpha)
+                    )
+                }
             }
         }
-    }
 
+        viewmodel.slidesData.observe(this, Observer { slides ->
+            for (slide in slides) {
+                viewmodel.setSlideView(slide)
+            }
+        })
+    }
 
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         startActivityForResult(intent, READ_EXTERNAL_STORAGE_REQUEST_CODE)
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

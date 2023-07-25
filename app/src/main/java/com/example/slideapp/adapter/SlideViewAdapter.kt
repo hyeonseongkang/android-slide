@@ -1,12 +1,11 @@
 package com.example.slideapp.adapter
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.slideapp.R
-import com.example.slideapp.databinding.AdapterSlideSquareItemBinding
+import com.example.slideapp.databinding.AdapterSlideViewItemBinding
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
 import com.example.slideapp.listener.ItemTouchHelperListener
@@ -20,7 +19,7 @@ class SlideViewAdapter(
     private lateinit var itemLongClickListener: ItemLongClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SlideViewHolder {
-        val binding = AdapterSlideSquareItemBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        val binding = AdapterSlideViewItemBinding.inflate(LayoutInflater.from(parent.context),parent,false)
         return SlideViewHolder(binding)
     }
 
@@ -72,7 +71,7 @@ class SlideViewAdapter(
         this.itemClickListener = onItemClickListener
     }
 
-    class SlideViewHolder(private val binding: AdapterSlideSquareItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    class SlideViewHolder(private val binding: AdapterSlideViewItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(slideView: SlideSquareView) {
             binding.tvSlideIndex.text = ""
             binding.vBackground.setBackgroundResource(R.color.mid_gray2)

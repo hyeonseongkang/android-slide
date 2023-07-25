@@ -51,6 +51,18 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+
     testImplementation 'org.mockito:mockito-core:3.11.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
+
+    // retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+
+    // gson
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // glide
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
 }

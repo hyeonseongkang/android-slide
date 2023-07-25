@@ -11,7 +11,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.MockitoAnnotations
 
-class SlideManagerViewModelTest {
+class SquareSlideManagerViewModelTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()

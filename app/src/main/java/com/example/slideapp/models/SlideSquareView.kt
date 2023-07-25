@@ -1,5 +1,8 @@
 package com.example.slideapp.models
 
+import android.graphics.Bitmap
+import android.util.Log
+import com.example.slideapp.utils.parseColor
 import java.util.UUID
 import kotlin.random.Random
 
@@ -13,7 +16,7 @@ class SlideSquareView private constructor(
 
 ) {
     override fun toString(): String {
-        return "Rect${index} (${id}), Slide:${square.slide}, R:${square.backgroundColor.r}, G:${square.backgroundColor.g}, B:${square.backgroundColor.b}, Alpha: ${alpha}"
+        return "Rect${index} (${id}), R:${square.backgroundColor.R}, G:${square.backgroundColor.G}, B:${square.backgroundColor.B}, Alpha: ${alpha}"
     }
 
     companion object Factory {
@@ -27,10 +30,21 @@ class SlideSquareView private constructor(
             val length = Random.nextInt(1, 101)
             val backgroundColor = generateRandomColor()
             return if (square == 0) {
-                SlideSquareView(index, id, true, alpha, Square(slide, length, backgroundColor))
+                SlideSquareView(index, id, true, alpha, Square(length, backgroundColor))
             } else {
-                SlideSquareView(index, id, false, 10, Square(0,  0,Color(0, 0, 0)), null)
+                SlideSquareView(index, id, false, 10, Square(0,Color(0, 0, 0)),  null)
             }
+        }
+
+        fun setSlideView(slide: Slide): SlideSquareView {
+            index++
+            return if (slide.type == "Square") {
+                SlideSquareView(index, slide.id, true, slide.alpha, Square(slide.size, Color(slide.color.R, slide.color.G, slide.color.B)))
+            } else {
+                SlideSquareView(index, slide.id, false , slide.alpha, Square(0, Color(0, 0,0,)),
+                    slide.image?.let { Photo(it) })
+            }
+
         }
 
         private fun generateUniqueId(): String {

@@ -7,15 +7,20 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
+import androidx.transition.Transition
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomViewTarget
+import com.bumptech.glide.request.target.SimpleTarget
 import com.example.slideapp.R
-import com.example.slideapp.listener.doubleTapListener
-import com.example.slideapp.listener.singleTapListener
+import com.example.slideapp.listener.DoubleTapListener
+import com.example.slideapp.listener.SingleTapListener
 
 class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {
 
@@ -25,8 +30,8 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
     private var imageBitmap: Bitmap? = null
     private var imageRect: Rect? = null
 
-    private var doubleTapListener: doubleTapListener? = null
-    private var singleTapListener: singleTapListener? = null
+    private var doubleTapListener: DoubleTapListener? = null
+    private var singleTapListener: SingleTapListener? = null
 
     private var doubleTapStartTime: Long = 0
     private val doubleTapTimeout: Long = ViewConfiguration.getDoubleTapTimeout().toLong()
@@ -34,11 +39,11 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
     private var isSingleTap = false
     private val singleTapTimeout: Long = ViewConfiguration.getDoubleTapTimeout().toLong()
 
-    fun setOnDoubleTapListener(listener: doubleTapListener) {
+    fun setOnDoubleTapListener(listener: DoubleTapListener) {
         doubleTapListener = listener
     }
 
-    fun setOnSingleTapListener(listener: singleTapListener) {
+    fun setOnSingleTapListener(listener: SingleTapListener) {
         singleTapListener = listener
     }
 
@@ -188,4 +193,26 @@ class CustomSquareView(context: Context, attrs: AttributeSet? = null) : View(con
             TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics
         )
     }
+
+    private fun setImageUrlWithGlide(imageUrl: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(imageUrl)
+            .into(object : SimpleTarget<Bitmap>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
+                ) {
+                    imageBitmap = resource
+                    calculateImageRect()
+                    invalidate()
+                }
+            })
+    }
+
+    fun setImageUrl(imageUrl: String) {
+        imageBitmap = null
+        setImageUrlWithGlide(imageUrl)
+    }
+
 }

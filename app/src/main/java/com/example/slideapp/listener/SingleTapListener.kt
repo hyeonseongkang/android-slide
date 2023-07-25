@@ -1,5 +1,5 @@
 package com.example.slideapp.listener
 
-interface singleTapListener {
+interface SingleTapListener {
     fun onSingleTap()
 }
