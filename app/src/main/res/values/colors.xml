@@ -6,5 +6,8 @@
     <color name="light_gray">#D3D3D3</color>
     <color name="dark_gray">#A9A9A9</color>
     <color name="mid_gray">#B2B1B1</color>
+    <color name="mid_gray2">#898787</color>
+    <color name="dark_gray2">#565353</color>
     <color name="face_book">#1877FE</color>
+    <color name="light_blue">#9BBFF1</color>
 </resources>

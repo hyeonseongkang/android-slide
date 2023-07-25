@@ -36,11 +36,12 @@ class SlideManagerViewModel : ViewModel() {
         }
     }
 
-    fun setSlideSquareView() {
-        val slideSquareView = SlideSquareView.createRandomSlideSquareView()
+    fun setSlideSquareView(index: Int) {
+        val slideSquareView = SlideSquareView.createRandomSlideSquareView(index)
         val currentSlideSquareList = slideSquareList.value?.toMutableList() ?: mutableListOf()
         currentSlideSquareList.add(slideSquareView)
         _slideSquareList.value = currentSlideSquareList
+        _slideSquareViewCnt.value = _slideSquareList.value?.size
     }
 
     fun getTotalCntSlideSquareView() {

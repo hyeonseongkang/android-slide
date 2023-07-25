@@ -1,19 +1,21 @@
 package com.example.slideapp.ui
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.slideapp.callback.ItemTouchHelperCallback
 import com.example.slideapp.view.CustomSquareView
-import com.example.slideapp.R
+import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.SlideSquareView
+import com.example.slideapp.utils.combineColor
+import com.example.slideapp.utils.parseColor
 import com.example.slideapp.viewmodels.SlideManagerViewModel
 
 class MainActivity : AppCompatActivity() {
@@ -24,14 +26,16 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var customSquareView: CustomSquareView
 
+    private lateinit var slideViewAdapter: SlideViewAdapter
+
     private lateinit var backgroundColor: Color
     private lateinit var combinedColor: String
     private var alpha: Int = 0
+    private var slideViewCnt: Int = 0
     private val borderColor: String = "#1877FE"
+    private lateinit var slideViewList: List<SlideSquareView>
+    private lateinit var selectedSlideView: SlideSquareView
 
-    private val alphaValues = arrayOf(
-        "00", "1A", "33", "4D", "66", "80", "99", "B3", "CC", "E6", "FF"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +49,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
         viewmodel = ViewModelProvider(this)[SlideManagerViewModel::class.java]
-        viewmodel.setSlideSquareView()
+
+        customSquareView = CustomSquareView(this)
+        slideViewAdapter = SlideViewAdapter()
+        binding.rvSlideList.adapter = slideViewAdapter
+        binding.rvSlideList.layoutManager = LinearLayoutManager(this)
+
+        val itemTouchHelperCallback = ItemTouchHelperCallback(slideViewAdapter)
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.rvSlideList)
+
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -77,66 +90,99 @@ class MainActivity : AppCompatActivity() {
         binding.btnAlphaPlus.setOnClickListener {
             viewmodel.alphaPlus(alpha)
         }
+
+        binding.btnAddSlide.setOnClickListener {
+            viewmodel.setSlideSquareView(slideViewCnt)
+        }
+
+        slideViewAdapter.setItemClickListener(object : SlideViewAdapter.OnItemClickListener {
+            override fun onClick(v: View, position: Int) {
+                selectedSlideView = slideViewList[position]
+                backgroundColor = selectedSlideView.backgroundColor
+
+                alpha = selectedSlideView.alpha
+
+                combinedColor = combineColor(alpha, backgroundColor)
+
+                binding.squareView.setColors(
+                    combinedColor,
+                    combinedColor
+                )
+
+                binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+
+                binding.tvBackgroundColorTxt.text = combinedColor
+                binding.tvAlphaTxt.text = alpha.toString()
+
+            }
+        })
     }
 
     private fun observer() {
         viewmodel.viewTouch.observe(this) { it ->
             when (it) {
                 true -> {
-                    this.combinedColor =
-                        "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
-                    customSquareView.setColors(combinedColor, borderColor)
+                    combinedColor = combineColor(alpha, backgroundColor)
+                    binding.squareView.setColors(combinedColor, borderColor)
                     binding.viewPropertyModification.visibility = View.VISIBLE
                 }
 
                 false -> {
-                    this.combinedColor =
-                        "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
-                    customSquareView.setColors(combinedColor, combinedColor)
+                    combinedColor = combineColor(alpha, backgroundColor)
+                    binding.squareView.setColors(combinedColor, combinedColor)
                     binding.viewPropertyModification.visibility = View.GONE
                 }
             }
         }
 
         viewmodel.backgroundColor.observe(this) { it ->
-            binding.btnBackgroundColor.setCardBackgroundColor(
-                android.graphics.Color.parseColor(
-                    it.toColorString()
-                )
-            )
-            customSquareView.setColors(it.toColorString(), borderColor)
+            binding.btnBackgroundColor.setBackgroundColor(parseColor(it.toColorString()))
+
             this.backgroundColor = Color(it.r, it.g, it.b)
-            binding.tvBackgroundColorTxt.text = it.toHexString()
+            this.selectedSlideView.backgroundColor = Color(it.r, it.g, it.b)
+
+            combinedColor = combineColor(alpha, backgroundColor)
+            binding.squareView.setColors(
+                combinedColor,
+                combinedColor
+            )
+
+            binding.tvBackgroundColorTxt.text = combinedColor
+            slideViewAdapter.setSlideViewList(slideViewList as MutableList<SlideSquareView>, true)
         }
 
         viewmodel.alphaValue.observe(this) { it ->
             this.alpha = it
             binding.tvAlphaTxt.text = alpha.toString()
-            this.combinedColor =
-                "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
-            customSquareView.setColors(combinedColor, borderColor)
+            this.selectedSlideView.alpha = alpha
+            combinedColor = combineColor(alpha, backgroundColor)
+            binding.squareView.setColors(combinedColor, borderColor)
+            binding.tvBackgroundColorTxt.text = combinedColor
         }
 
         viewmodel.slideSquareList.observe(this) {
-            val slideSquareView = it.last()
-            customSquareView = CustomSquareView(this)
-            backgroundColor = slideSquareView.backgroundColor
-            this.alpha = slideSquareView.alpha
+            slideViewAdapter.setSlideViewList(it as MutableList<SlideSquareView>, true)
 
-            this.combinedColor =
-                "#${alphaValues[alpha]}${backgroundColor.toColorString().substring(1)}"
-            customSquareView.setColors(
+            this.slideViewList = it
+            this.selectedSlideView = it.last()
+
+            backgroundColor = selectedSlideView.backgroundColor
+            this.alpha = selectedSlideView.alpha
+
+            combinedColor = combineColor(alpha, backgroundColor)
+            binding.squareView.setColors(
                 combinedColor,
                 combinedColor
             )
 
-            val color =
-                android.graphics.Color.parseColor(combinedColor)
-            binding.btnBackgroundColor.setCardBackgroundColor(color)
+            binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
 
-            binding.tvBackgroundColorTxt.text = combinedColor
+            binding.tvBackgroundColorTxt.text = backgroundColor.toColorString()
             binding.tvAlphaTxt.text = alpha.toString()
-            binding.squareView.addView(customSquareView)
+        }
+
+        viewmodel.slideSquareViewCnt.observe(this) {
+            this.slideViewCnt = it
         }
     }
 }
