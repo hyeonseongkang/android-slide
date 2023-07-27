@@ -64,6 +64,12 @@ class SlideViewAdapter(
         notifyItemInserted(slideViewList.lastIndex)
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun initSlideViewList() {
+        slideViewList.clear()
+        notifyDataSetChanged()
+    }
+
     fun setItemLongClickListener(onItemLongClickListener: ItemLongClickListener) {
         itemLongClickListener = onItemLongClickListener
     }

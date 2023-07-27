@@ -42,6 +42,10 @@ class SlideView private constructor(
             }
         }
 
+        fun init() {
+            index = 0
+        }
+
         fun setSlideView(slide: Slide): SlideView {
             index++
             return if (slide.type == "Square") {

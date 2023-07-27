@@ -10,4 +10,6 @@
     <string name="action_send_forward">앞으로 보내기</string>
     <string name="action_send_to_front">맨 앞으로 보내기</string>
     <string name="empty" />
+    <string name="reset">reset</string>
+    <string name="newdocs">새 문서 추가하기</string>
 </resources>

@@ -40,6 +40,11 @@ class SlideViewModel(
         _slideManager.value = savedSlideManager ?: SlideManager(emptyList(), 0)
     }
 
+    fun initSlideManager() {
+        _slideManager.value = SlideManager(emptyList(), 0)
+        SlideView.init()
+    }
+
     fun saveSlideManagerState() {
         savedStateHandle["slideManager"] = _slideManager.value
     }
