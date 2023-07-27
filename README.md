@@ -85,3 +85,21 @@
 
 ## 개선할 점
 MainActivity에 DataBinding 적용하기
+
+## 4-2. 드로잉 표시하기
+- 23/07/27(목) - 13:18 완성
+
+## 구현 내용
+- 드로잉 슬라이드를 추가 후, 터치하는 동안 좌표를 저장해서 드로잉 정보를 표시
+- CustomView 기능 분리
+
+## 고민 사항
+- CustomView에서 drawing 기능 구현하기
+DrawingCompleteListener -> Drawing 완료하면 x,y 좌표 반환
+x,y를 변수로 가지는 Point data class 선언, ACTION_DOWN, ACTION_MOVE event 발생 시, Point(x, y) 저장 ACTION_UP event 발생하면 DrawingCompleteListener.onDrawingComplete(path: List<Point>) 안에서 데이터 저장
+
+- CustomView 코드 정리
+Touch Event, Drawing 코드가 전부 CustomView.class에 있어서 코드 읽기 및 수정에 매우 안 좋았음 -> Touch Event와 관련된 코드는 CustomViewTouchEvent.kt, Drawing과 관련된 코드는 CustomViewDrawing.kt로 분리함
+
+## 개선할 점
+CustomView 코드 정리를 통해 코드의 가독성이 높아진 거 같음 기능 분리할 수 있는 코드들 확인하고 분리하여 프로그램 전체 가독성 높이기
