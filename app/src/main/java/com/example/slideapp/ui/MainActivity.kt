@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -21,7 +22,7 @@ import com.example.slideapp.view.CustomView
 import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.enums.DrawingType
-import com.example.slideapp.factory.SlideManagerViewModelFactory
+import com.example.slideapp.factory.SlideViewModelFactory
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
 import com.example.slideapp.listener.DoubleTapListener
@@ -70,7 +71,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
     private fun init() {
         val slideRepository = SlideViewRepository()
-        val viewModelFactory = SlideManagerViewModelFactory(slideRepository)
+        val viewModelFactory = SlideViewModelFactory(slideRepository, SavedStateHandle())
 
         viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideViewModel::class.java)
 
@@ -92,6 +93,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         binding.squareView.setOnDoubleTapListener(this)
         binding.squareView.setDrawingCompleteListener(this)
 
+        viewmodel.loadSlideManagerState()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -279,52 +281,55 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         }
 
         viewmodel.slideManager.observe(this) {
-            val slideList = it.slideList
+            it?.let {
+                val slideList = it.slideList
+                viewmodel.saveSlideManagerState()
+                slideViewAdapter.setSlideViewList(slideList.last())
+                binding.slideView = slideList.last()
 
-            slideViewAdapter.setSlideViewList(slideList.last())
-            binding.slideView = slideList.last()
+                slideViewList = slideList
+                selectedSlideView = slideList.last()
 
-            slideViewList = slideList
-            selectedSlideView = slideList.last()
+                alpha = selectedSlideView.alpha
+                binding.tvAlphaTxt.text = alpha.toString()
+                binding.tvBackgroundColorTxt.text = ""
+                binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+                backgroundColor = selectedSlideView.square.backgroundColor
+                binding.squareView.resetView()
 
-            alpha = selectedSlideView.alpha
-            binding.tvAlphaTxt.text = alpha.toString()
-            binding.tvBackgroundColorTxt.text = ""
-            binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-            backgroundColor = selectedSlideView.square.backgroundColor
-            binding.squareView.resetView()
+                when (selectedSlideView.type) {
+                    "Square" -> {
+                        combinedColor = combineColor(alpha, backgroundColor)
 
-            when (selectedSlideView.type) {
-                "Square" -> {
-                    combinedColor = combineColor(alpha, backgroundColor)
-
-                    binding.squareView.setColors(
-                        combinedColor,
-                    )
-                    binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-                    binding.tvBackgroundColorTxt.text = combinedColor
-
-                    binding.squareView.setDrawingType(DrawingType.SQUARE)
-                }
-
-                "Image" -> {
-                    binding.squareView.setDrawingType(DrawingType.IMAGE)
-
-                    selectedSlideView.photo?.toBitmap()?.let {
-                        customView.setImage(
-                            it,
-                            convertAlphaStringToValue(alpha)
+                        binding.squareView.setColors(
+                            combinedColor,
                         )
-                    }
-                }
+                        binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+                        binding.tvBackgroundColorTxt.text = combinedColor
 
-                "Draw" -> {
-                    selectedSlideView.draw?.let {
-                        customView.setPoint(it.path, combineColor(10, backgroundColor))
+                        binding.squareView.setDrawingType(DrawingType.SQUARE)
                     }
-                    binding.squareView.setDrawingType(DrawingType.DRAW)
+
+                    "Image" -> {
+                        binding.squareView.setDrawingType(DrawingType.IMAGE)
+
+                        selectedSlideView.photo?.toBitmap()?.let {
+                            customView.setImage(
+                                it,
+                                convertAlphaStringToValue(alpha)
+                            )
+                        }
+                    }
+
+                    "Draw" -> {
+                        selectedSlideView.draw?.let {
+                            customView.setPoint(it.path, combineColor(10, backgroundColor))
+                        }
+                        binding.squareView.setDrawingType(DrawingType.DRAW)
+                    }
                 }
             }
+
         }
 
         viewmodel.slidesData.observe(this, Observer { slides ->
@@ -363,5 +368,20 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
                 }
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewmodel.saveSlideManagerState()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        viewmodel.saveSlideManagerState()
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        viewmodel.loadSlideManagerState()
     }
 }

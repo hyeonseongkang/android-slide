@@ -2,6 +2,7 @@ package com.example.slideapp.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slideapp.manager.SlideManager
@@ -14,6 +15,7 @@ import kotlin.random.Random
 
 class SlideViewModel(
     private val slideRepository: SlideViewRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _slideManager = MutableLiveData<SlideManager>()
     val slideManager: LiveData<SlideManager> = _slideManager
@@ -32,6 +34,20 @@ class SlideViewModel(
 
     private val _slidesData = MutableLiveData<List<Slide>>()
     val slidesData: LiveData<List<Slide>> = _slidesData
+
+    init {
+        val savedSlideManager: SlideManager? = savedStateHandle["slideManager"]
+        _slideManager.value = savedSlideManager ?: SlideManager(emptyList(), 0)
+    }
+
+    fun saveSlideManagerState() {
+        savedStateHandle["slideManager"] = _slideManager.value
+    }
+
+    fun loadSlideManagerState() {
+        val savedSlideManager: SlideManager? = savedStateHandle["slideManager"]
+        _slideManager.value = savedSlideManager
+    }
 
     fun getSlideSquareView(index: Int) {
         val slideListValue = slideManager.value?.slideList
