@@ -36,16 +36,17 @@ import com.example.slideapp.repository.SlideViewRepository
 import com.example.slideapp.utils.combineColor
 import com.example.slideapp.utils.convertAlphaStringToValue
 import com.example.slideapp.utils.parseColor
-import com.example.slideapp.viewmodels.SlideManagerViewModel
+import com.example.slideapp.viewmodels.SlideViewModel
 import java.io.ByteArrayOutputStream
 
-class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, View.OnLongClickListener, DrawingCompleteListener {
+class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
+    View.OnLongClickListener, DrawingCompleteListener {
 
     private val READ_EXTERNAL_STORAGE_REQUEST_CODE = 101
 
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var viewmodel: SlideManagerViewModel
+    private lateinit var viewmodel: SlideViewModel
 
     private lateinit var customView: CustomView
 
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
         val slideRepository = SlideViewRepository()
         val viewModelFactory = SlideManagerViewModelFactory(slideRepository)
 
-        viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideManagerViewModel::class.java)
+        viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideViewModel::class.java)
 
         customView = CustomView(this)
         slideViewAdapter = SlideViewAdapter()
@@ -127,7 +128,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                 binding.tvBackgroundColorTxt.text = ""
                 binding.btnBackgroundColor.setBackgroundResource(R.color.black)
 
-                when(selectedSlideView.type) {
+                when (selectedSlideView.type) {
                     "Square" -> {
                         combinedColor = combineColor(alpha, backgroundColor)
 
@@ -235,7 +236,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
             backgroundColor = Color(it.R, it.G, it.B)
             selectedSlideView.square.backgroundColor = Color(it.R, it.G, it.B)
             combinedColor = combineColor(alpha, backgroundColor)
-            when(selectedSlideView.type) {
+            when (selectedSlideView.type) {
                 "Square" -> {
 
                     binding.squareView.setColors(
@@ -277,13 +278,14 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
         }
 
-        viewmodel.slideSquareList.observe(this) {
-            slideViewAdapter.setSlideViewList(it.last())
+        viewmodel.slideManager.observe(this) {
+            val slideList = it.slideList
 
-            binding.slideView = it.last()
+            slideViewAdapter.setSlideViewList(slideList.last())
+            binding.slideView = slideList.last()
 
-            slideViewList = it
-            selectedSlideView = it.last()
+            slideViewList = slideList
+            selectedSlideView = slideList.last()
 
             alpha = selectedSlideView.alpha
             binding.tvAlphaTxt.text = alpha.toString()
@@ -292,7 +294,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
             backgroundColor = selectedSlideView.square.backgroundColor
             binding.squareView.resetView()
 
-            when(selectedSlideView.type) {
+            when (selectedSlideView.type) {
                 "Square" -> {
                     combinedColor = combineColor(alpha, backgroundColor)
 

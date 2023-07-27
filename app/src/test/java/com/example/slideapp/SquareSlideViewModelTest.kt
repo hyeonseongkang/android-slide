@@ -1,7 +1,7 @@
 package com.example.slideapp
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.slideapp.viewmodels.SlideManagerViewModel
+import com.example.slideapp.viewmodels.SlideViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -10,18 +10,18 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.MockitoAnnotations
 
-class SquareSlideManagerViewModelTest {
+class SquareSlideViewModelTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
 
 
-    private lateinit var viewModel: SlideManagerViewModel
+    private lateinit var viewModel: SlideViewModel
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        viewModel = SlideManagerViewModel()
+        viewModel = SlideViewModel()
 
     }
 

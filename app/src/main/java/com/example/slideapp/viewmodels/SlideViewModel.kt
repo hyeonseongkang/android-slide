@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.slideapp.manager.SlideManager
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.Slide
 import com.example.slideapp.models.SlideView
@@ -11,10 +12,11 @@ import com.example.slideapp.repository.SlideViewRepository
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-class SlideManagerViewModel(private val slideRepository: SlideViewRepository) : ViewModel() {
-
-    private val _slideSquareList = MutableLiveData<List<SlideView>>()
-    val slideSquareList: LiveData<List<SlideView>> = _slideSquareList
+class SlideViewModel(
+    private val slideRepository: SlideViewRepository,
+) : ViewModel() {
+    private val _slideManager = MutableLiveData<SlideManager>()
+    val slideManager: LiveData<SlideManager> = _slideManager
 
     private val _slideSquareViewCnt = MutableLiveData<Int>()
     val slideSquareViewCnt: LiveData<Int> = _slideSquareViewCnt
@@ -30,33 +32,31 @@ class SlideManagerViewModel(private val slideRepository: SlideViewRepository) : 
 
     private val _slidesData = MutableLiveData<List<Slide>>()
     val slidesData: LiveData<List<Slide>> = _slidesData
-    
+
     fun getSlideSquareView(index: Int) {
-        val slideSquareListValue = slideSquareList.value
-        if (slideSquareListValue != null && index >= 0 && index < slideSquareListValue.size) {
-            val selectedSlideSquareView = slideSquareListValue[index]
+        val slideListValue = slideManager.value?.slideList
+        if (slideListValue != null && index >= 0 && index < slideListValue.size) {
+            val selectedSlideSquareView = slideListValue[index]
             _slideView.value = selectedSlideSquareView
         }
     }
 
     fun setSlideSquareView() {
         val slideView = SlideView.createRandomSlideSquareView()
-        val currentSlideSquareList = slideSquareList.value?.toMutableList() ?: mutableListOf()
+        val currentSlideSquareList = _slideManager.value?.slideList?.toMutableList() ?: mutableListOf()
         currentSlideSquareList.add(slideView)
-        _slideSquareList.value = currentSlideSquareList
-        _slideSquareViewCnt.value = _slideSquareList.value?.size
+        _slideManager.value = SlideManager(currentSlideSquareList, currentSlideSquareList.size)
     }
 
     fun setSlideView(slide: Slide) {
         val slideView = SlideView.setSlideView(slide)
-        val currentSlideSquareList = slideSquareList.value?.toMutableList() ?: mutableListOf()
+        val currentSlideSquareList = _slideManager.value?.slideList?.toMutableList() ?: mutableListOf()
         currentSlideSquareList.add(slideView)
-        _slideSquareList.value = currentSlideSquareList
-        _slideSquareViewCnt.value = _slideSquareList.value?.size
+        _slideManager.value = SlideManager(currentSlideSquareList, currentSlideSquareList.size)
     }
 
     fun getTotalCntSlideSquareView() {
-        _slideSquareViewCnt.value = _slideSquareList.value?.size
+        _slideSquareViewCnt.value = _slideManager.value?.slideList?.size
     }
 
     fun randomBackgroundColor() {
