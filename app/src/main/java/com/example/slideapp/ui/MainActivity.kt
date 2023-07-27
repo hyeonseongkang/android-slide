@@ -20,7 +20,7 @@ import com.example.slideapp.callback.ItemTouchHelperCallback
 import com.example.slideapp.view.CustomView
 import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
-import com.example.slideapp.enum.DrawingType
+import com.example.slideapp.enums.DrawingType
 import com.example.slideapp.factory.SlideManagerViewModelFactory
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                     "Draw" -> {
                         binding.squareView.setDrawingType(DrawingType.DRAW)
                         selectedSlideView.draw?.let {
-                            customView.setPoint(it.path)
+                            customView.setPoint(it.path, combineColor(10, backgroundColor))
                         }
                     }
                 }
@@ -290,6 +290,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
             binding.tvBackgroundColorTxt.text = ""
             binding.btnBackgroundColor.setBackgroundResource(R.color.black)
             backgroundColor = selectedSlideView.square.backgroundColor
+            binding.squareView.resetView()
 
             when(selectedSlideView.type) {
                 "Square" -> {
@@ -317,7 +318,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
                 "Draw" -> {
                     selectedSlideView.draw?.let {
-                        customView.setPoint(it.path)
+                        customView.setPoint(it.path, combineColor(10, backgroundColor))
                     }
                     binding.squareView.setDrawingType(DrawingType.DRAW)
                 }
