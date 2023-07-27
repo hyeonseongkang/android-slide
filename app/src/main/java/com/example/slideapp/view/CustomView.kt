@@ -9,7 +9,6 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
@@ -266,6 +265,11 @@ class CustomView(context: Context, attrs: AttributeSet? = null) : View(context, 
 
     fun setPoint(path: List<Point>) {
         pointsList = path as MutableList<Point>
+    }
+
+    fun setLineColor(color: String) {
+        paint.color = Color.parseColor(color)
+        invalidate()
     }
 
     fun unSelectedView() {

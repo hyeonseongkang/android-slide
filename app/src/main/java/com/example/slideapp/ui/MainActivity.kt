@@ -5,12 +5,9 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Path
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
 import androidx.lifecycle.Observer
@@ -103,7 +100,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
         }
 
         binding.btnBackgroundColor.setOnClickListener {
-            if (!(selectedSlideView.type == "Square"))
+            if (selectedSlideView.type == "Image")
                 return@setOnClickListener
             viewmodel.randomBackgroundColor()
         }
@@ -237,11 +234,20 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
             backgroundColor = Color(it.R, it.G, it.B)
             selectedSlideView.square.backgroundColor = Color(it.R, it.G, it.B)
-
             combinedColor = combineColor(alpha, backgroundColor)
-            binding.squareView.setColors(
-                combinedColor
-            )
+            when(selectedSlideView.type) {
+                "Square" -> {
+
+                    binding.squareView.setColors(
+                        combinedColor
+                    )
+                }
+
+                "Draw" -> {
+                    binding.squareView.setLineColor(combineColor(10, backgroundColor))
+                }
+            }
+
 
             binding.tvBackgroundColorTxt.text = combinedColor
 
