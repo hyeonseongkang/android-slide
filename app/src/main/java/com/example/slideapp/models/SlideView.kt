@@ -1,17 +1,15 @@
 package com.example.slideapp.models
 
-import android.graphics.Bitmap
-import android.util.Log
-import com.example.slideapp.utils.parseColor
 import java.util.UUID
 import kotlin.random.Random
 
-class SlideSquareView private constructor(
+class SlideView private constructor(
     var index: Int,
     val id: String,
-    var isSquare: Boolean,
+    var type: String,
     var alpha: Int,
     var square: Square,
+    var draw: Draw? = null,
     var photo: Photo? = null
 
 ) {
@@ -21,27 +19,35 @@ class SlideSquareView private constructor(
 
     companion object Factory {
         var index = 0
-        fun createRandomSlideSquareView(): SlideSquareView {
-            val square = Random.nextInt(2)
+        fun createRandomSlideSquareView(): SlideView {
+            val type = Random.nextInt(3)
             val id = generateUniqueId()
             index++
             val alpha = Random.nextInt(1, 11)
             val slide = Random.nextInt(100, 500)
             val length = Random.nextInt(1, 101)
             val backgroundColor = generateRandomColor()
-            return if (square == 0) {
-                SlideSquareView(index, id, true, alpha, Square(length, backgroundColor))
-            } else {
-                SlideSquareView(index, id, false, 10, Square(0,Color(0, 0, 0)),  null)
+            val viewType = when (type) {
+                0 -> "Square"
+                1 -> "Image"
+                2 -> "Draw"
+                else -> "Square"
+            }
+
+            return when (viewType) {
+                "Square" -> SlideView(index, id, viewType, alpha, Square(length, backgroundColor))
+                "Image" -> SlideView(index, id, viewType, 10, Square(0, Color(0, 0, 0)))
+                "Draw" -> SlideView(index, id, viewType, 10, Square(0, Color(0, 0, 0)))
+                else -> SlideView(index, id, viewType, alpha, Square(length, backgroundColor))
             }
         }
 
-        fun setSlideView(slide: Slide): SlideSquareView {
+        fun setSlideView(slide: Slide): SlideView {
             index++
             return if (slide.type == "Square") {
-                SlideSquareView(index, slide.id, true, slide.alpha, Square(slide.size, Color(slide.color.R, slide.color.G, slide.color.B)))
+                SlideView(index, slide.id, "Square", slide.alpha, Square(slide.size, Color(slide.color.R, slide.color.G, slide.color.B)))
             } else {
-                SlideSquareView(index, slide.id, false , slide.alpha, Square(0, Color(0, 0,0,)),
+                SlideView(index, slide.id, "Image" , slide.alpha, Square(0, Color(0, 0,0,)), null,
                     slide.image?.let { Photo(it) })
             }
         }

@@ -7,7 +7,7 @@
     <data>
         <variable
             name="square"
-            type="com.example.slideapp.models.SlideSquareView" />
+            type="com.example.slideapp.models.SlideView" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -52,7 +52,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="30dp"
-            app:backgroundColorBinding="@{square.square.backgroundColor.toColorString()}"
+            app:backgroundColorBinding="@{square.type}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/cv_slide_background"

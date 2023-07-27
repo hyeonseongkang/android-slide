@@ -1,7 +1,6 @@
 package com.example.slideapp
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.slideapp.models.SlideSquareView
 import com.example.slideapp.viewmodels.SlideManagerViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -44,7 +43,7 @@ class SquareSlideManagerViewModelTest {
 
         viewModel.getSlideSquareView(lastIndex)
 
-        val selectedSlideSquareView = viewModel.slideSquareView.value
+        val selectedSlideSquareView = viewModel.slideView.value
         assertNotNull(selectedSlideSquareView)
     }
 

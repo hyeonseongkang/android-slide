@@ -5,10 +5,12 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Path
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
 import androidx.lifecycle.Observer
@@ -16,20 +18,23 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.example.slideapp.R
 import com.example.slideapp.callback.ItemTouchHelperCallback
-import com.example.slideapp.view.CustomSquareView
+import com.example.slideapp.view.CustomView
 import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
+import com.example.slideapp.enum.DrawingType
 import com.example.slideapp.factory.SlideManagerViewModelFactory
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
 import com.example.slideapp.listener.DoubleTapListener
+import com.example.slideapp.listener.DrawingCompleteListener
 import com.example.slideapp.listener.SingleTapListener
 import com.example.slideapp.models.Color
+import com.example.slideapp.models.Draw
 import com.example.slideapp.models.Photo
-import com.example.slideapp.models.SlideSquareView
+import com.example.slideapp.models.Point
+import com.example.slideapp.models.SlideView
 import com.example.slideapp.repository.SlideViewRepository
 import com.example.slideapp.utils.combineColor
 import com.example.slideapp.utils.convertAlphaStringToValue
@@ -37,7 +42,7 @@ import com.example.slideapp.utils.parseColor
 import com.example.slideapp.viewmodels.SlideManagerViewModel
 import java.io.ByteArrayOutputStream
 
-class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, View.OnLongClickListener {
+class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, View.OnLongClickListener, DrawingCompleteListener {
 
     private val READ_EXTERNAL_STORAGE_REQUEST_CODE = 101
 
@@ -45,15 +50,15 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
     private lateinit var viewmodel: SlideManagerViewModel
 
-    private lateinit var customSquareView: CustomSquareView
+    private lateinit var customView: CustomView
 
     private lateinit var slideViewAdapter: SlideViewAdapter
 
     private lateinit var backgroundColor: Color
     private lateinit var combinedColor: String
     private var alpha: Int = 0
-    private lateinit var slideViewList: List<SlideSquareView>
-    private lateinit var selectedSlideView: SlideSquareView
+    private lateinit var slideViewList: List<SlideView>
+    private lateinit var selectedSlideView: SlideView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +76,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
         viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideManagerViewModel::class.java)
 
-        customSquareView = CustomSquareView(this)
+        customView = CustomView(this)
         slideViewAdapter = SlideViewAdapter()
         binding.rvSlideList.adapter = slideViewAdapter
 
@@ -87,6 +92,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
         binding.squareView.setOnSingleTapListener(this)
         binding.squareView.setOnDoubleTapListener(this)
+        binding.squareView.setDrawingCompleteListener(this)
 
     }
 
@@ -97,7 +103,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
         }
 
         binding.btnBackgroundColor.setOnClickListener {
-            if (!selectedSlideView.isSquare)
+            if (!(selectedSlideView.type == "Square"))
                 return@setOnClickListener
             viewmodel.randomBackgroundColor()
         }
@@ -120,23 +126,38 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                 backgroundColor = selectedSlideView.square.backgroundColor
                 alpha = selectedSlideView.alpha
                 binding.tvAlphaTxt.text = alpha.toString()
-                if (selectedSlideView.isSquare) {
-                    combinedColor = combineColor(alpha, backgroundColor)
+                customView.resetView()
+                binding.tvBackgroundColorTxt.text = ""
+                binding.btnBackgroundColor.setBackgroundResource(R.color.black)
 
-                    binding.squareView.setColors(
-                        combinedColor,
-                    )
+                when(selectedSlideView.type) {
+                    "Square" -> {
+                        combinedColor = combineColor(alpha, backgroundColor)
 
-                    binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-                    binding.tvBackgroundColorTxt.text = combinedColor
-                } else if (selectedSlideView.photo != null){
-                    binding.tvBackgroundColorTxt.text = ""
-                    binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-                    selectedSlideView.photo!!.toBitmap()?.let {
-                        customSquareView.setImage(
-                            it,
-                            convertAlphaStringToValue(alpha)
+                        binding.squareView.setColors(
+                            combinedColor,
                         )
+                        binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+                        binding.tvBackgroundColorTxt.text = combinedColor
+
+                        binding.squareView.setDrawingType(DrawingType.SQUARE)
+                    }
+
+                    "Image" -> {
+                        binding.squareView.setDrawingType(DrawingType.IMAGE)
+                        selectedSlideView.photo?.toBitmap()?.let {
+                            customView.setImage(
+                                it,
+                                convertAlphaStringToValue(alpha)
+                            )
+                        }
+                    }
+
+                    "Draw" -> {
+                        binding.squareView.setDrawingType(DrawingType.DRAW)
+                        selectedSlideView.draw?.let {
+                            customView.setPoint(it.path)
+                        }
                     }
                 }
                 binding.squareView.selectedView()
@@ -179,23 +200,26 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
 
         binding.btnAddSlide.setOnLongClickListener(this)
 
-        customSquareView = binding.squareView
+        customView = binding.squareView
+
     }
 
     override fun onLongClick(v: View): Boolean {
-        // Snackbar.make(v, "start retrofit", Snackbar.LENGTH_SHORT).show()
         viewmodel.getSlidesData()
         return true
     }
 
     override fun onDoubleTap() {
-        if (selectedSlideView.isSquare)
-            return
-        openGallery()
+        if (selectedSlideView.type == "Image")
+            openGallery()
+    }
+
+    override fun onDrawingComplete(path: List<Point>) {
+        selectedSlideView.draw = Draw(path)
     }
 
     override fun onSingleTap() {
-        if (selectedSlideView.isSquare) {
+        if ((selectedSlideView.type == "Square")) {
             combinedColor = combineColor(alpha, backgroundColor)
             binding.squareView.setColors(combinedColor)
         } else {
@@ -204,6 +228,8 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
         }
         binding.squareView.selectedView()
     }
+
+
     @SuppressLint("ResourceAsColor")
     private fun observer() {
         viewmodel.backgroundColor.observe(this) { it ->
@@ -218,7 +244,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
             )
 
             binding.tvBackgroundColorTxt.text = combinedColor
-            slideViewAdapter.setSlideViewList(slideViewList as MutableList<SlideSquareView>)
 
             binding.squareView.selectedView()
         }
@@ -228,7 +253,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
             binding.tvAlphaTxt.text = alpha.toString()
             selectedSlideView.alpha = alpha
 
-            if (selectedSlideView.isSquare) {
+            if ((selectedSlideView.type == "Square")) {
                 combinedColor = combineColor(alpha, backgroundColor)
                 binding.squareView.setColors(combinedColor)
                 binding.tvBackgroundColorTxt.text = combinedColor
@@ -241,36 +266,54 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                 }
                 binding.tvBackgroundColorTxt.text = ""
             }
+
             binding.squareView.selectedView()
 
         }
 
         viewmodel.slideSquareList.observe(this) {
-            slideViewAdapter.setSlideViewList(it as MutableList<SlideSquareView>)
+            slideViewAdapter.setSlideViewList(it.last())
+
+            binding.slideView = it.last()
 
             slideViewList = it
             selectedSlideView = it.last()
 
             alpha = selectedSlideView.alpha
             binding.tvAlphaTxt.text = alpha.toString()
-            if (selectedSlideView.isSquare) {
-                backgroundColor = selectedSlideView.square.backgroundColor
-                combinedColor = combineColor(alpha, backgroundColor)
-                binding.squareView.setColors(
-                    combinedColor
-                )
+            binding.tvBackgroundColorTxt.text = ""
+            binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+            backgroundColor = selectedSlideView.square.backgroundColor
 
-                binding.btnBackgroundColor.setBackgroundColor(parseColor(combinedColor))
+            when(selectedSlideView.type) {
+                "Square" -> {
+                    combinedColor = combineColor(alpha, backgroundColor)
 
-                binding.tvBackgroundColorTxt.text = backgroundColor.toColorString()
-            } else if (selectedSlideView.photo != null){
-                binding.tvBackgroundColorTxt.text = ""
-                binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-                selectedSlideView.photo!!.toBitmap()?.let {
-                    customSquareView.setImage(
-                        it,
-                        convertAlphaStringToValue(alpha)
+                    binding.squareView.setColors(
+                        combinedColor,
                     )
+                    binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+                    binding.tvBackgroundColorTxt.text = combinedColor
+
+                    binding.squareView.setDrawingType(DrawingType.SQUARE)
+                }
+
+                "Image" -> {
+                    binding.squareView.setDrawingType(DrawingType.IMAGE)
+
+                    selectedSlideView.photo?.toBitmap()?.let {
+                        customView.setImage(
+                            it,
+                            convertAlphaStringToValue(alpha)
+                        )
+                    }
+                }
+
+                "Draw" -> {
+                    selectedSlideView.draw?.let {
+                        customView.setPoint(it.path)
+                    }
+                    binding.squareView.setDrawingType(DrawingType.DRAW)
                 }
             }
         }
@@ -304,7 +347,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener, 
                         val byteArray = byteArrayOutputStream.toByteArray()
                         val photo = Photo(byteArray)
                         selectedSlideView.photo = photo
-                        customSquareView.setImage(bitmap, convertAlphaStringToValue(alpha))
+                        customView.setImage(bitmap, convertAlphaStringToValue(alpha))
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

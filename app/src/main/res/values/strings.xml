@@ -9,4 +9,5 @@
     <string name="action_send_backward">뒤로 보내기</string>
     <string name="action_send_forward">앞으로 보내기</string>
     <string name="action_send_to_front">맨 앞으로 보내기</string>
+    <string name="empty" />
 </resources>

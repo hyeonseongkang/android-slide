@@ -9,17 +9,18 @@ import com.example.slideapp.databinding.AdapterSlideViewItemBinding
 import com.example.slideapp.listener.ItemClickListener
 import com.example.slideapp.listener.ItemLongClickListener
 import com.example.slideapp.listener.ItemTouchHelperListener
-import com.example.slideapp.models.SlideSquareView
+import com.example.slideapp.models.SlideView
 
 class SlideViewAdapter(
-    private var slideViewList: MutableList<SlideSquareView> = mutableListOf()
+    private var slideViewList: MutableList<SlideView> = mutableListOf()
 ) : RecyclerView.Adapter<SlideViewAdapter.SlideViewHolder>(), ItemTouchHelperListener {
 
     private lateinit var itemClickListener: ItemClickListener
     private lateinit var itemLongClickListener: ItemLongClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SlideViewHolder {
-        val binding = AdapterSlideViewItemBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+        val binding =
+            AdapterSlideViewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SlideViewHolder(binding)
     }
 
@@ -58,9 +59,9 @@ class SlideViewAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setSlideViewList(getSlideViewList: MutableList<SlideSquareView>) {
-        slideViewList = getSlideViewList
-        notifyDataSetChanged()
+    fun setSlideViewList(slide: SlideView) {
+        slideViewList.add(slide)
+        notifyItemInserted(slideViewList.lastIndex)
     }
 
     fun setItemLongClickListener(onItemLongClickListener: ItemLongClickListener) {
@@ -71,8 +72,9 @@ class SlideViewAdapter(
         itemClickListener = onItemClickListener
     }
 
-    class SlideViewHolder(private val binding: AdapterSlideViewItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(slideView: SlideSquareView) {
+    class SlideViewHolder(private val binding: AdapterSlideViewItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(slideView: SlideView) {
             binding.tvSlideIndex.text = ""
             binding.vBackground.setBackgroundResource(R.color.mid_gray2)
             binding.square = slideView
