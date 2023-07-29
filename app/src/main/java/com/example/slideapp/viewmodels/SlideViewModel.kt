@@ -80,7 +80,10 @@ class SlideViewModel(
         _slideSquareViewCnt.value = _slideManager.value?.slideList?.size
     }
 
-    fun randomBackgroundColor() {
+    fun randomBackgroundColor(selectedSlideView: SlideView) {
+        if (selectedSlideView.type == "Image") {
+            return
+        }
         val red = Random.nextInt(256)
         val green = Random.nextInt(256)
         val blue = Random.nextInt(256)
@@ -104,4 +107,5 @@ class SlideViewModel(
             _slidesData.value = slides
         }
     }
+
 }

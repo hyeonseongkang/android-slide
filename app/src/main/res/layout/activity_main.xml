@@ -8,6 +8,23 @@
         <variable
             name="slideView"
             type="com.example.slideapp.models.SlideView" />
+
+        <variable
+            name="selectedSlideView"
+            type="com.example.slideapp.models.SlideView" />
+
+        <variable
+            name="viewModel"
+            type="com.example.slideapp.viewmodels.SlideViewModel" />
+
+        <variable
+            name="adapter"
+            type="com.example.slideapp.adapter.SlideViewAdapter" />
+
+        <variable
+            name="customView"
+            type="com.example.slideapp.view.CustomView" />
+
     </data>
 
 
@@ -40,6 +57,7 @@
             android:layout_width="180dp"
             android:layout_height="40dp"
             android:background="@drawable/btn_add_slide"
+            android:onClick="@{() -> viewModel.setSlideSquareView()}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rv_slide_list" />
@@ -93,6 +111,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="5dp"
+                android:onClick="@{() -> viewModel.randomBackgroundColor(selectedSlideView)}"
                 app:cardCornerRadius="10dp"
                 app:color="@{slideView.square.backgroundColor}"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -108,8 +127,8 @@
                 android:gravity="center"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                app:alpha="@{slideView.alpha}"
-                app:color="@{slideView.square.backgroundColor}"
+                app:alpha="@{viewModel.alphaValue}"
+                app:color="@{viewModel.backgroundColor}"
                 app:layout_constraintBottom_toBottomOf="@id/btn_background_color"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -138,7 +157,7 @@
                 android:background="@color/white"
                 android:gravity="end"
                 android:padding="5dp"
-                android:text="@{String.valueOf(slideView.alpha)}"
+                android:text="@{String.valueOf(viewModel.alphaValue)}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_alpha"
                 tools:text="9" />
@@ -164,6 +183,7 @@
                     android:text="@string/minus"
                     android:textColor="@color/white"
                     android:textSize="20sp"
+                    android:onClick="@{() -> viewModel.alphaMinus(selectedSlideView.alpha)}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/btn_alpha_plus"
                     app:layout_constraintStart_toStartOf="parent"
@@ -179,6 +199,7 @@
                     android:text="@string/plus"
                     android:textColor="@color/white"
                     android:textSize="16sp"
+                    android:onClick="@{() -> viewModel.alphaPlus(selectedSlideView.alpha)}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/btn_alpha_minus"
@@ -198,9 +219,9 @@
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 app:cardCornerRadius="10dp"
-                app:layout_constraintTop_toBottomOf="@id/btn_alpha_frame"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_alpha_frame"
                 app:layout_goneMarginTop="20dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

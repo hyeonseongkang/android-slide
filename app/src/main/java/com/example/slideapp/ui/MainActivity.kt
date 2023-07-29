@@ -25,11 +25,11 @@ import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.databinding.ActivityMainBinding
 import com.example.slideapp.enums.DrawingType
 import com.example.slideapp.factory.SlideViewModelFactory
-import com.example.slideapp.listener.ItemClickListener
-import com.example.slideapp.listener.ItemLongClickListener
-import com.example.slideapp.listener.DoubleTapListener
-import com.example.slideapp.listener.DrawingCompleteListener
-import com.example.slideapp.listener.SingleTapListener
+import com.example.slideapp.listeners.ItemClickListener
+import com.example.slideapp.listeners.ItemLongClickListener
+import com.example.slideapp.listeners.DoubleTapListener
+import com.example.slideapp.listeners.DrawingCompleteListener
+import com.example.slideapp.listeners.SingleTapListener
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.Draw
 import com.example.slideapp.models.Photo
@@ -42,7 +42,7 @@ import com.example.slideapp.utils.parseColor
 import com.example.slideapp.viewmodels.SlideViewModel
 import java.io.ByteArrayOutputStream
 import android.Manifest
-import androidx.core.app.ActivityCompat
+import androidx.databinding.DataBindingUtil
 import captureScreen
 import java.util.*
 
@@ -67,8 +67,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         init()
         btnClick()
@@ -80,6 +79,8 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         val viewModelFactory = SlideViewModelFactory(slideRepository, SavedStateHandle())
 
         viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideViewModel::class.java)
+        binding.lifecycleOwner = this  // 추가: lifecycleOwner 설정
+        binding.viewModel = viewmodel
 
         customView = CustomView(this)
         slideViewAdapter = SlideViewAdapter()
@@ -104,76 +105,23 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
     @SuppressLint("ClickableViewAccessibility")
     private fun btnClick() {
+
+        binding.viewModel = viewmodel
         binding.centerView.setOnClickListener {
             binding.squareView.unSelectedView()
         }
 
-        binding.btnBackgroundColor.setOnClickListener {
-            if (selectedSlideView.type == "Image")
-                return@setOnClickListener
-            viewmodel.randomBackgroundColor()
-        }
-
-        binding.btnAlphaMinus.setOnClickListener {
-            viewmodel.alphaMinus(alpha)
-        }
-
-        binding.btnAlphaPlus.setOnClickListener {
-            viewmodel.alphaPlus(alpha)
-        }
-
-        binding.btnAddSlide.setOnClickListener {
-            viewmodel.setSlideSquareView()
-        }
-
         binding.btnResetSlideView.setOnClickListener {
-            viewmodel.initSlideManager()
-            slideViewAdapter.initSlideViewList()
-            binding.squareView.resetView()
-            binding.btnBackgroundColor.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-            binding.tvBackgroundColorTxt.text = ""
-            //binding.
+            resetSlideView()
         }
 
         slideViewAdapter.setItemClickListener(object : ItemClickListener {
             override fun onClick(v: View, position: Int) {
-                selectedSlideView = slideViewList[position]
-                backgroundColor = selectedSlideView.square.backgroundColor
-                alpha = selectedSlideView.alpha
-                binding.tvAlphaTxt.text = alpha.toString()
-                customView.resetView()
-                binding.tvBackgroundColorTxt.text = ""
-                binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-
+                setupSelectedSlideView(position)
                 when (selectedSlideView.type) {
-                    "Square" -> {
-                        combinedColor = combineColor(alpha, backgroundColor)
-
-                        binding.squareView.setColors(
-                            combinedColor,
-                        )
-                        binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-                        binding.tvBackgroundColorTxt.text = combinedColor
-
-                        binding.squareView.setDrawingType(DrawingType.SQUARE)
-                    }
-
-                    "Image" -> {
-                        binding.squareView.setDrawingType(DrawingType.IMAGE)
-                        selectedSlideView.photo?.toBitmap()?.let {
-                            customView.setImage(
-                                it,
-                                convertAlphaStringToValue(alpha)
-                            )
-                        }
-                    }
-
-                    "Draw" -> {
-                        binding.squareView.setDrawingType(DrawingType.DRAW)
-                        selectedSlideView.draw?.let {
-                            customView.setPoint(it.path, combineColor(10, backgroundColor))
-                        }
-                    }
+                    "Square" -> setupSquareView()
+                    "Image" -> setupImageView()
+                    "Draw" -> setupDrawView()
                 }
                 binding.squareView.selectedView()
             }
@@ -186,26 +134,10 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
                 popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
                     when (menuItem.itemId) {
-                        R.id.action_send_to_back -> {
-                            slideViewAdapter.onItemMove(position, slideViewList.size - 1)
-                            true
-                        }
-
-                        R.id.action_send_backward -> {
-                            slideViewAdapter.onItemMove(position, position + 1)
-                            true
-                        }
-
-                        R.id.action_send_forward -> {
-                            slideViewAdapter.onItemMove(position, position - 1)
-                            true
-                        }
-
-                        R.id.action_send_to_front -> {
-                            slideViewAdapter.onItemMove(position, 0)
-                            true
-                        }
-
+                        R.id.action_send_to_back -> sendToBack(position)
+                        R.id.action_send_backward -> sendBackward(position)
+                        R.id.action_send_forward -> sendForward(position)
+                        R.id.action_send_to_front -> sendToFront(position)
                         else -> false
                     }
                 }
@@ -255,7 +187,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
             combinedColor = combineColor(alpha, backgroundColor)
             when (selectedSlideView.type) {
                 "Square" -> {
-
                     binding.squareView.setColors(
                         combinedColor
                     )
@@ -265,7 +196,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
                     binding.squareView.setLineColor(combineColor(10, backgroundColor))
                 }
             }
-
 
             binding.tvBackgroundColorTxt.text = combinedColor
 
@@ -305,6 +235,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
                     slideViewList = slideList
                     selectedSlideView = slideList.last()
+                    binding.selectedSlideView = slideList.last()
 
                     alpha = selectedSlideView.alpha
                     binding.tvAlphaTxt.text = alpha.toString()
@@ -347,7 +278,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         })
     }
 
-    private fun openGallery() {
+    fun openGallery() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "image/*"
         startActivityForResult(intent, READ_EXTERNAL_STORAGE_REQUEST_CODE)
@@ -404,4 +335,64 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         }
     }
 
+    private fun resetSlideView() {
+        viewmodel.initSlideManager()
+        slideViewAdapter.initSlideViewList()
+        binding.squareView.resetView()
+        binding.btnBackgroundColor.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+        binding.tvBackgroundColorTxt.text = ""
+    }
+
+    private fun setupSelectedSlideView(position: Int) {
+        selectedSlideView = slideViewList[position]
+        binding.selectedSlideView = slideViewList[position]
+        backgroundColor = selectedSlideView.square.backgroundColor
+        alpha = selectedSlideView.alpha
+        binding.tvAlphaTxt.text = alpha.toString()
+        customView.resetView()
+        binding.tvBackgroundColorTxt.text = ""
+        binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+    }
+
+    private fun setupSquareView() {
+        combinedColor = combineColor(alpha, backgroundColor)
+        binding.squareView.setColors(combinedColor)
+        binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+        binding.tvBackgroundColorTxt.text = combinedColor
+        binding.squareView.setDrawingType(DrawingType.SQUARE)
+    }
+
+    private fun setupImageView() {
+        binding.squareView.setDrawingType(DrawingType.IMAGE)
+        selectedSlideView.photo?.toBitmap()?.let {
+            customView.setImage(it, convertAlphaStringToValue(alpha))
+        }
+    }
+
+    private fun setupDrawView() {
+        binding.squareView.setDrawingType(DrawingType.DRAW)
+        selectedSlideView.draw?.let {
+            customView.setPoint(it.path, combineColor(10, backgroundColor))
+        }
+    }
+
+    private fun sendToBack(position: Int): Boolean {
+        slideViewAdapter.onItemMove(position, slideViewList.size - 1)
+        return true
+    }
+
+    private fun sendBackward(position: Int): Boolean {
+        slideViewAdapter.onItemMove(position, position + 1)
+        return true
+    }
+
+    private fun sendForward(position: Int): Boolean {
+        slideViewAdapter.onItemMove(position, position - 1)
+        return true
+    }
+
+    private fun sendToFront(position: Int): Boolean {
+        slideViewAdapter.onItemMove(position, 0)
+        return true
+    }
 }

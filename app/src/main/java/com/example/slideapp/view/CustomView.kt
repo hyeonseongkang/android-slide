@@ -16,9 +16,9 @@ import android.view.ViewConfiguration
 import androidx.core.content.ContextCompat
 import com.example.slideapp.R
 import com.example.slideapp.enums.DrawingType
-import com.example.slideapp.listener.DoubleTapListener
-import com.example.slideapp.listener.DrawingCompleteListener
-import com.example.slideapp.listener.SingleTapListener
+import com.example.slideapp.listeners.DoubleTapListener
+import com.example.slideapp.listeners.DrawingCompleteListener
+import com.example.slideapp.listeners.SingleTapListener
 import com.example.slideapp.models.Point
 
 class CustomView(context: Context, attrs: AttributeSet? = null) : View(context, attrs) {

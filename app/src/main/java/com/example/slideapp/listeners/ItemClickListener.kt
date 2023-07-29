@@ -1,4 +1,4 @@
-package com.example.slideapp.listener
+package com.example.slideapp.listeners
 
 import android.view.View
 

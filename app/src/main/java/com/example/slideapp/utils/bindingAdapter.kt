@@ -4,9 +4,11 @@ import android.view.View
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.example.slideapp.R
+import com.example.slideapp.adapter.SlideViewAdapter
 import com.example.slideapp.models.Color
 import com.example.slideapp.models.SlideView
 import com.example.slideapp.view.CustomView
+import com.example.slideapp.viewmodels.SlideViewModel
 
 @BindingAdapter("backgroundColorBinding")
 fun backgroundColorBinding(view: View, type: String) {
@@ -29,9 +31,4 @@ fun btnBackgroundColorBinding(view: View, type: String?, color: Color?) {
     if (type == "Square" && color != null) {
         view.setBackgroundColor(parseColor(color.toColorString()))
     }
-}
-
-@BindingAdapter(value = ["slideView"], requireAll = false)
-fun customView(view: CustomView, slideView: SlideView) {
-
 }

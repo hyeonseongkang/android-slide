@@ -1,4 +1,4 @@
-package com.example.slideapp.listener
+package com.example.slideapp.listeners
 
 interface DoubleTapListener {
     fun onDoubleTap()

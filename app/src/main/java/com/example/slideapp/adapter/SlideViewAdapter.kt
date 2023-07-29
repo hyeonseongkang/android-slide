@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.slideapp.R
 import com.example.slideapp.databinding.AdapterSlideViewItemBinding
-import com.example.slideapp.listener.ItemClickListener
-import com.example.slideapp.listener.ItemLongClickListener
-import com.example.slideapp.listener.ItemTouchHelperListener
+import com.example.slideapp.listeners.ItemClickListener
+import com.example.slideapp.listeners.ItemLongClickListener
+import com.example.slideapp.listeners.ItemTouchHelperListener
 import com.example.slideapp.models.SlideView
 
 class SlideViewAdapter(
