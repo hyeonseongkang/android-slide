@@ -27,13 +27,15 @@ class SlideViewRepository {
                 apiService.getSquareSlides()
             }
 
-            val imageSlides = response.slides.filter { it.type == "Image" }
+            val slides = response?.slides ?: return emptyList()
+
+            val imageSlides = slides.filter { it.type == "Image" }
             imageSlides.forEach { slide ->
                 slide.image = downloadImageFromUrl(slide.url)
-                Log.d("로그", slide.image.toString() + "여기요!!")
             }
 
-            response.slides
+            slides
+
         } catch (e: Exception) {
             null
         }
