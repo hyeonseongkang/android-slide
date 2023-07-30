@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         val viewModelFactory = SlideViewModelFactory(slideRepository, SavedStateHandle())
 
         viewmodel = ViewModelProvider(this, viewModelFactory).get(SlideViewModel::class.java)
-        binding.lifecycleOwner = this  // 추가: lifecycleOwner 설정
+        binding.lifecycleOwner = this
         binding.viewModel = viewmodel
 
         customView = CustomView(this)
@@ -109,10 +109,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         binding.viewModel = viewmodel
         binding.centerView.setOnClickListener {
             binding.squareView.unSelectedView()
-        }
-
-        binding.btnResetSlideView.setOnClickListener {
-            resetSlideView()
         }
 
         slideViewAdapter.setItemClickListener(object : ItemClickListener {
@@ -183,6 +179,7 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         observeAlphaValue()
         observeSlideManager()
         observeSlidesData()
+        observeResetSlideView()
     }
 
     fun openGallery() {
@@ -240,14 +237,6 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
         ) {
             captureScreen(this)
         }
-    }
-
-    private fun resetSlideView() {
-        viewmodel.initSlideManager()
-        slideViewAdapter.initSlideViewList()
-        binding.squareView.resetView()
-        binding.btnBackgroundColor.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        binding.tvBackgroundColorTxt.text = ""
     }
 
     private fun setupSelectedSlideView(position: Int) {
@@ -406,6 +395,15 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
             for (slide in slides) {
                 viewmodel.setSlideView(slide)
             }
+        })
+    }
+
+    private fun observeResetSlideView() {
+        viewmodel.resetSlideViewEvent.observe(this, Observer {
+            slideViewAdapter.initSlideViewList()
+            binding.squareView.resetView()
+            binding.btnBackgroundColor.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            binding.tvBackgroundColorTxt.text = ""
         })
     }
 }

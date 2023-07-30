@@ -35,6 +35,9 @@ class SlideViewModel(
     private val _slidesData = MutableLiveData<List<Slide>>()
     val slidesData: LiveData<List<Slide>> = _slidesData
 
+    private val _resetSlideViewEvent = MutableLiveData<Unit>()
+    val resetSlideViewEvent: LiveData<Unit> = _resetSlideViewEvent
+
     init {
         val savedSlideManager: SlideManager? = savedStateHandle["slideManager"]
         _slideManager.value = savedSlideManager ?: SlideManager(emptyList(), 0)
@@ -106,6 +109,10 @@ class SlideViewModel(
             val slides = slideRepository.getSlides()
             _slidesData.value = slides
         }
+    }
+
+    fun resetSlideView() {
+        _resetSlideViewEvent.value = Unit
     }
 
 }
