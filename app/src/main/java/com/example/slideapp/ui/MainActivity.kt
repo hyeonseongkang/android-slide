@@ -179,103 +179,10 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
 
     @SuppressLint("ResourceAsColor")
     private fun observer() {
-        viewmodel.backgroundColor.observe(this) { it ->
-            binding.btnBackgroundColor.setBackgroundColor(parseColor(it.toColorString()))
-
-            backgroundColor = Color(it.R, it.G, it.B)
-            selectedSlideView.square.backgroundColor = Color(it.R, it.G, it.B)
-            combinedColor = combineColor(alpha, backgroundColor)
-            when (selectedSlideView.type) {
-                "Square" -> {
-                    binding.squareView.setColors(
-                        combinedColor
-                    )
-                }
-
-                "Draw" -> {
-                    binding.squareView.setLineColor(combineColor(10, backgroundColor))
-                }
-            }
-
-            binding.tvBackgroundColorTxt.text = combinedColor
-
-            binding.squareView.selectedView()
-        }
-
-        viewmodel.alphaValue.observe(this) { it ->
-            alpha = it
-            binding.tvAlphaTxt.text = alpha.toString()
-            selectedSlideView.alpha = alpha
-
-            if ((selectedSlideView.type == "Square")) {
-                combinedColor = combineColor(alpha, backgroundColor)
-                binding.squareView.setColors(combinedColor)
-                binding.tvBackgroundColorTxt.text = combinedColor
-            } else {
-                selectedSlideView.photo?.toBitmap()?.let { it1 ->
-                    binding.squareView.setImage(
-                        it1,
-                        convertAlphaStringToValue(alpha)
-                    )
-                }
-                binding.tvBackgroundColorTxt.text = ""
-            }
-
-            binding.squareView.selectedView()
-
-        }
-
-        viewmodel.slideManager.observe(this) {
-            it?.let { slideManager ->
-                val slideList = slideManager.slideList
-                if (slideList.isNotEmpty()) {
-                    viewmodel.saveSlideManagerState()
-                    slideViewAdapter.setSlideViewList(slideList.last())
-                    binding.slideView = slideList.last()
-
-                    slideViewList = slideList
-                    selectedSlideView = slideList.last()
-                    binding.selectedSlideView = slideList.last()
-
-                    alpha = selectedSlideView.alpha
-                    binding.tvAlphaTxt.text = alpha.toString()
-                    binding.tvBackgroundColorTxt.text = ""
-                    binding.btnBackgroundColor.setBackgroundResource(R.color.black)
-                    backgroundColor = selectedSlideView.square.backgroundColor
-                    binding.squareView.resetView()
-
-                    when (selectedSlideView.type) {
-                        "Square" -> {
-                            combinedColor = combineColor(alpha, backgroundColor)
-                            binding.squareView.setColors(combinedColor)
-                            binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
-                            binding.tvBackgroundColorTxt.text = combinedColor
-                            binding.squareView.setDrawingType(DrawingType.SQUARE)
-                        }
-
-                        "Image" -> {
-                            binding.squareView.setDrawingType(DrawingType.IMAGE)
-                            selectedSlideView.photo?.toBitmap()?.let {
-                                customView.setImage(it, convertAlphaStringToValue(alpha))
-                            }
-                        }
-
-                        "Draw" -> {
-                            selectedSlideView.draw?.let {
-                                customView.setPoint(it.path, combineColor(10, backgroundColor))
-                            }
-                            binding.squareView.setDrawingType(DrawingType.DRAW)
-                        }
-                    }
-                }
-            }
-        }
-
-        viewmodel.slidesData.observe(this, Observer { slides ->
-            for (slide in slides) {
-                viewmodel.setSlideView(slide)
-            }
-        })
+        observeBackgroundColor()
+        observeAlphaValue()
+        observeSlideManager()
+        observeSlidesData()
     }
 
     fun openGallery() {
@@ -394,5 +301,111 @@ class MainActivity : AppCompatActivity(), SingleTapListener, DoubleTapListener,
     private fun sendToFront(position: Int): Boolean {
         slideViewAdapter.onItemMove(position, 0)
         return true
+    }
+
+    private fun observeBackgroundColor() {
+        viewmodel.backgroundColor.observe(this) { it ->
+            binding.btnBackgroundColor.setBackgroundColor(parseColor(it.toColorString()))
+
+            backgroundColor = Color(it.R, it.G, it.B)
+            selectedSlideView.square.backgroundColor = Color(it.R, it.G, it.B)
+            combinedColor = combineColor(alpha, backgroundColor)
+            when (selectedSlideView.type) {
+                "Square" -> {
+                    binding.squareView.setColors(
+                        combinedColor
+                    )
+                }
+
+                "Draw" -> {
+                    binding.squareView.setLineColor(combineColor(10, backgroundColor))
+                }
+            }
+
+            binding.tvBackgroundColorTxt.text = combinedColor
+
+            binding.squareView.selectedView()
+        }
+    }
+
+    private fun observeAlphaValue() {
+        viewmodel.alphaValue.observe(this) { it ->
+            alpha = it
+            binding.tvAlphaTxt.text = alpha.toString()
+            selectedSlideView.alpha = alpha
+
+            if ((selectedSlideView.type == "Square")) {
+                combinedColor = combineColor(alpha, backgroundColor)
+                binding.squareView.setColors(combinedColor)
+                binding.tvBackgroundColorTxt.text = combinedColor
+            } else {
+                selectedSlideView.photo?.toBitmap()?.let { it1 ->
+                    binding.squareView.setImage(
+                        it1,
+                        convertAlphaStringToValue(alpha)
+                    )
+                }
+                binding.tvBackgroundColorTxt.text = ""
+            }
+
+            binding.squareView.selectedView()
+
+        }
+    }
+
+    private fun observeSlideManager() {
+        viewmodel.slideManager.observe(this) {
+            it?.let { slideManager ->
+                val slideList = slideManager.slideList
+                if (slideList.isNotEmpty()) {
+                    viewmodel.saveSlideManagerState()
+                    slideViewAdapter.setSlideViewList(slideList.last())
+                    binding.slideView = slideList.last()
+
+                    slideViewList = slideList
+                    selectedSlideView = slideList.last()
+                    binding.selectedSlideView = slideList.last()
+
+                    alpha = selectedSlideView.alpha
+                    binding.tvAlphaTxt.text = alpha.toString()
+                    binding.tvBackgroundColorTxt.text = ""
+                    binding.btnBackgroundColor.setBackgroundResource(R.color.black)
+                    backgroundColor = selectedSlideView.square.backgroundColor
+                    binding.squareView.resetView()
+
+                    when (selectedSlideView.type) {
+                        "Square" -> {
+                            combinedColor = combineColor(alpha, backgroundColor)
+                            binding.squareView.setColors(combinedColor)
+                            binding.btnBackgroundColor.setBackgroundColor(parseColor(backgroundColor.toColorString()))
+                            binding.tvBackgroundColorTxt.text = combinedColor
+                            binding.squareView.setDrawingType(DrawingType.SQUARE)
+                        }
+
+                        "Image" -> {
+                            binding.squareView.setDrawingType(DrawingType.IMAGE)
+                            selectedSlideView.photo?.toBitmap()?.let {
+                                customView.setImage(it, convertAlphaStringToValue(alpha))
+                            }
+                        }
+
+                        "Draw" -> {
+                            selectedSlideView.draw?.let {
+                                customView.setPoint(it.path, combineColor(10, backgroundColor))
+                            }
+                            binding.squareView.setDrawingType(DrawingType.DRAW)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeSlidesData() {
+        viewmodel.slidesData.observe(this, Observer { slides ->
+            for (slide in slides) {
+                viewmodel.setSlideView(slide)
+            }
+        })
     }
 }
